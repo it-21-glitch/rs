@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加记录</title>
+    <script src="/static/jquery.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="/static/css/add_records.css">
+</head>
+<body>
+<div class="load" id="load" hidden="hidden"
+     style="background-color:rgba(236,229,229,0.5);height:100vh;z-index: 1999;width: 100%;position: absolute">
+    <samp style="margin-top:50px;text-align: center;display: block;font-size: 18px;pointer-events: none;color: black">正在加载...</samp>
+</div>
+<div class="content" style="max-height:90vh;overflow-y: scroll ">
+    <div style="padding: 12px;text-align: center;">
+        <span style="font-size: 25px;font-weight: bolder;">添加记录</span>
+    </div>
+    <div>
+        <table id="content_table">
+            <tr>
+                <td class="header">输入PO：</td>
+                <td>
+                    <input type="text" id="po">
+                </td>
+                <td class="header">输入ITEM：</td>
+                <td>
+                    <input type="text" id="item">
+                </td>
+            </tr>
+            <tr>
+                <td class="header">选择材质：</td>
+                <td>
+                    <select onchange="material_option()" id="materialSelect">
+                        <option value="" disabled selected>-- 请选择材质 --</option>
+                        {% for i in data_list_all %}
+                        <option value="{{i.id}}">{{i.material_name}}</option>
+                        {%endfor%}
+                    </select>
+                </td>
+                <td class="header">选择工序：</td>
+                <td>
+                    <select id="processSelect" onchange="process_option()">
+                        <option value="" disabled selected>-- 请选择工序 --</option>
+                    </select>
+                </td>
+
+            </tr>
+            <tr>
+                <td class="header">选择设备：</td>
+                <td>
+                    <select id="equipmentSelect">
+                        <option value="" disabled selected>-- 请选择设备 --</option>
+                    </select>
+                </td>
+                <td class="header">产品规格：</td>
+                <td>
+                    <select id="specsSelect">
+                        <option value="" disabled selected>-- 请选产品规格 --</option>
+                        <option value="classes_capacity_small">小号</option>
+                        <option value="classes_capacity_middle">中号</option>
+                        <option value="classes_capacity_big">大号</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="header">上传考勤截图：</td>
+                <td colspan="">
+                    <input type="file" id="file" accept=".jpg, .png, .webp">
+                    <span style=" font-size: 12px;display: flex;">支持上传图片格式：.jpg，.png，.webp，图片数量：1。</span>
+                </td>
+                <td class="header" style="color: red">新员工新增（新入职员工时进行添加）：</td>
+                <td>
+                    <input type="text" id="newEmployeeInput" placeholder="输入新员工姓名"
+                           style="height: 28px;width: 150px;text-align: center">
+                    <input type="date" id="newAgeInput" placeholder="新员工的出生日期"
+                           style="height: 28px;width: 150px;text-align: center">
+                    <button onclick="addEmployee()">
+                        添加
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <th class="header" colspan="5" style="text-align: left">
+                    <span>信息显示：</span>
+                    <span id="message"
+                          style=" font-size: 12px;color: red;text-align: center;line-height: 30px"></span>
+                </th>
+            </tr>
+            <tr>
+                <th class="header" colspan="5" style="text-align: center">班次/员工考勤</th>
+            </tr>
+        </table>
+    </div>
+</div>
+<hr style=" width: 70%;margin: 0 auto">
+<div class="addButton" style=" width: 70%;margin: 5px auto;display: flex;justify-content: space-between;">
+    <div>
+        <button onclick="nextProcedure()" hidden="hidden" id="next">进行下一道工序</button>
+    </div>
+    <div>
+        <button onclick="addSubmit()">提交确定</button>
+    </div>
+</div>
+</body>
+<script>
+    var content_table = document.getElementById("content_table");
+    var csrf_token = $('meta[name=csrf-token]').attr('content');
+    var userColoumnsNumber = 0
+    var classes_man_hour = 0
+    var max_people_number = 0
+    var min_people_number = 0
+
+    function showMessage() {
+        let specsSelect = document.getElementById("specsSelect").value // 规格
+        let materialSelect = document.getElementById("materialSelect").value // 材质
+        let processSelect = document.getElementById("processSelect").value // 工序
+        let equipmentSelect = document.getElementById("equipmentSelect").value // 设备
+        if (specsSelect && materialSelect && processSelect && equipmentSelect) {
+            $.ajax({
+                url: `/get_message?specsSelect=${specsSelect}&materialSelect=${materialSelect}&processSelect=${processSelect}&equipmentSelect=${equipmentSelect}`,
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
+                },
+                ContentType: 'application/json',
+                dataType: "JSON",
+                success(response) {
+                    let code = response.code
+                    let message = response.message
+                    let day_classes_frequency = response.day_classes_frequency // 班次
+                    max_people_number = response.max_people_number // 最大人数
+                    classes_man_hour = response.classes_man_hour // 工时
+                    min_people_number = response.min_people_number // 最小人数
+                    if (code === 200) {
+                        document.getElementById("message").innerText = message;
+                        // 删除列
+                        let trArray = Array.from(content_table.querySelectorAll("tr"));
+                        for (let i = 6; i < trArray.length; i++) {
+                            content_table.removeChild(trArray[i])
+                        }
+                        showClasses(day_classes_frequency, max_people_number)
+
+                    }
+                }
+            })
+        }
+    }
+
+    document.getElementById("specsSelect").addEventListener("change", showMessage);
+    document.getElementById("materialSelect").addEventListener("change", showMessage);
+    document.getElementById("processSelect").addEventListener("change", showMessage);
+    document.getElementById("equipmentSelect").addEventListener("change", showMessage);
+
+    function hiddenLoad() {
+        let load = document.getElementById('load');
+        if (load.hidden) {
+            load.removeAttribute('hidden');
+        } else {
+            load.setAttribute('hidden', 'hidden');
+        }
+    }
+
+    // 根据材质获取工序,根据工序获取设备
+    function request(status, pk) {
+        hiddenLoad();
+        $.ajax({
+            url: `/get_flow_data?status=${status}&pk=${pk}`,
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
+            },
+            ContentType: 'application/json',
+            dataType: "JSON",
+            success(response) {
+                let code = response.code
+                let data_list_all = response.data_list_all
+                if (code !== 200) {
+                    if (status === 0) {
+                        alert("无法请求工序！");
+                    } else {
+                        alert("无法请求设备！");
+                    }
+                } else {
+                    let processSelect = document.getElementById('processSelect');
+                    let equipmentSelect = document.getElementById('equipmentSelect');
+                    if (status === "process") {
+                        for (let i = equipmentSelect.options.length - 1; i > 0; i--) {
+                            equipmentSelect.remove(i);
+                        }
+                        for (let i = processSelect.options.length - 1; i > 0; i--) {
+                            processSelect.remove(i);
+                        }
+                        processSelect.selectedIndex = 0; // 切换默认选中
+                        equipmentSelect.selectedIndex = 0; // 切换默认选中
+                        for (let i = 0; i < data_list_all.length; i++) {
+                            let newOption = document.createElement('option');
+                            newOption.value = data_list_all[i].id;
+                            newOption.textContent = data_list_all[i].process_name;
+                            processSelect.appendChild(newOption);
+                        }
+                    } else {
+                        equipmentSelect.selectedIndex = 0;
+                        for (let i = equipmentSelect.options.length - 1; i > 0; i--) {
+                            equipmentSelect.remove(i);
+                        }
+                        for (let i = 0; i < data_list_all.length; i++) {
+                            let newOption = document.createElement('option');
+                            newOption.value = data_list_all[i].id;
+                            newOption.textContent = data_list_all[i].equipment_name;
+                            equipmentSelect.appendChild(newOption);
+                        }
+
+                    }
+                }
+                hiddenLoad();
+            }
+        })
+    }
+
+    // 根据材质获取工序
+    function material_option() {
+        let select = document.getElementById('materialSelect');
+        let selectedValue = select.options[select.selectedIndex].value;
+        request("process", selectedValue);
+    }
+
+    // 根据工序获取设备
+    function process_option() {
+        let select = document.getElementById('processSelect');
+        let selectedValue = select.options[select.selectedIndex].value;
+        request("equipment", selectedValue);
+    }
+
+    //添加员工方法
+    function addEmployee() {
+        hiddenLoad();
+        var newEmployeeInput = document.getElementById('newEmployeeInput');
+        var newAgeInput = document.getElementById('newAgeInput');
+        var newEmployeeName = newEmployeeInput.value.trim();
+        var newAgeNumber = newAgeInput.value.trim();
+        // 检查输入是否为空
+        if (newEmployeeName === '' || newAgeNumber === "") {
+            alert('请输入新员工姓名,年龄后在进行添加操作!');
+            hiddenLoad();
+            return;
+        }
+        $.ajax({
+            url: '/add_user',  // 服务器端上传文件的 URL
+            type: 'POST',
+            data: {"user_name": newEmployeeName, 'age': newAgeNumber},
+            headers: {
+                'X-CSRFToken': csrf_token  // 添加 CSRF Token 到请求头
+            },
+            success: function (response) {
+                let code = response.code
+                let data = response.data
+                if (code === 200) {
+                    alert("添加成功!")
+                    newEmployeeInput.value = '';
+                    newAgeInput.value = '';
+                } else {
+                    alert("添加失败!")
+                }
+                hiddenLoad();
+                window.reload();
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+                hiddenLoad();
+            }
+        });
+    }
+
+    // 下一道工序
+    function nextProcedure() {
+        let processSelect = document.getElementById('processSelect');
+        let equipmentSelect = document.getElementById('equipmentSelect');
+        equipmentSelect.selectedIndex = 0;
+        processSelect.selectedIndex = 0;
+        alert("请重新选择工序和工序需要使用的设备!")
+    }
+
+    // 提交数据
+    function addSubmit() {
+        hiddenLoad();
+        let classes_production_quantity_number = document.getElementById("classes_production_quantity_number").value // 班次产量
+        let po = document.getElementById("po").value // po
+        let item = document.getElementById("item").value // item
+        let specsSelect = document.getElementById("specsSelect").value // 规格
+        let materialSelect = document.getElementById("materialSelect").value // 材质
+        let processSelect = document.getElementById("processSelect").value // 工序
+        let equipmentSelect = document.getElementById("equipmentSelect").value // 设备
+        let file_value = document.getElementById('file').value // 考勤图片
+
+        if (!specsSelect) {
+            alert("请选择规格！")
+            hiddenLoad();
+            return;
+        }
+        if (!po || !item) {
+            alert("请输入po和item！")
+            hiddenLoad();
+            return;
+        }
+        if (!processSelect || !materialSelect || !equipmentSelect) {
+            alert("请选择材质，工序，设备！")
+            hiddenLoad();
+            return;
+        }
+        if (file_value) {
+            let pathSuffix = file_value.split('.')[1].toLowerCase() // 截取后缀 转为小写
+            let pathSuffixList = ['jpg', 'png', 'webp']
+            if (pathSuffixList.indexOf(pathSuffix) === -1) {
+                alert('图片上传格式错误，支持jpg，png，webp后缀格式！')
+                hiddenLoad();
+                return;
+            }
+        }
+        if (!classes_production_quantity_number) {
+            alert("请输入产量！")
+            hiddenLoad();
+            return;
+        }
+
+        let userList = []
+        // 获取考勤
+        for (let i = 0; i < userColoumnsNumber; i++) {
+            let startDate = document.getElementById(`newStartDate${i}`).value;
+            let endDate = document.getElementById(`newEndDate${i}`).value;
+            if (!startDate && !endDate) {
+                continue
+            }
+            let data = {
+                "start_date": startDate,
+                "end_date": endDate,
+
+            }
+            let p_lit = []
+            for (let j = 0; j < max_people_number; j++) {
+                let employee = document.getElementById(`employeeSelect${i}-${j}`).value;
+                let pay = document.getElementById(`pay${i}-${j}`).value;
+                if (!employee && !pay) {
+                    continue
+                }
+                p_lit.push({
+                    "employee": employee,
+                    "pay": pay
+                })
+            }
+            if (p_lit.length < min_people_number) {
+                alert(`班次${i + 1}人数小于${min_people_number}人！`)
+                hiddenLoad();
+                return;
+            }
+            data["p_lit"] = p_lit
+            userList.push(data)
+        }
+        console.log(userList.length)
+        if (userList.length < 0) {
+            alert(`需要填写班次信息！`)
+            hiddenLoad();
+            return;
+        }
+        let formData = new FormData();
+        formData.append('file', $('#file')[0].files[0]);
+        formData.append('classes_production_quantity_number', classes_production_quantity_number);
+        formData.append('po', po);
+        formData.append('item', item);
+        formData.append('specsSelect', specsSelect);
+        formData.append('materialSelect', materialSelect);
+        formData.append('processSelect', processSelect);
+        formData.append('equipmentSelect', equipmentSelect);
+        formData.append('userList', JSON.stringify(userList));
+        $.ajax({
+            url: '/add_record',  // 服务器端上传文件的 URL
+            type: 'POST',
+            data: formData,
+            processData: false,  // 禁止 jQuery 默认的处理过程（文件上传）
+            contentType: false,  // 禁止 jQuery 设置 contentType，使用浏览器默认的方式
+            headers: {
+                'X-CSRFToken': csrf_token  // 添加 CSRF Token 到请求头
+            },
+            success: function (response) {
+                var code = response.code
+                var error = response.error
+                if (code === 200) {
+                    alert("记录已经保存！");
+                    // location.reload();
+                    document.getElementById('next').removeAttribute("hidden")
+                } else {
+                    alert(error);
+                }
+                hiddenLoad();
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+                hiddenLoad();
+            }
+        });
+    }
+
+    //工时计算函数,进行展示数据
+    function mam_hour_func(num) {
+        let newStartDate = document.getElementById(`newStartDate${num}`).value
+        let newEndDate = document.getElementById(`newEndDate${num}`).value
+        if (newStartDate && newEndDate) {
+            const date1 = new Date(newStartDate);
+            const date2 = new Date(newEndDate);
+            // 计算时间差值（以毫秒为单位）
+            const timeDifference = date2 - date1;
+            // 将时间差值转换为小时
+            const hoursDifference = Math.round(timeDifference / (1000 * 60 * 60));
+            // 返回小时差值
+            document.getElementById(`dateTime${num}`).innerText = `工作时长：${hoursDifference}小时`
+            if (hoursDifference > classes_man_hour || hoursDifference < 0) {
+                alert(`班次：${num + 1}工时错误，标准工时${classes_man_hour}小时。`)
+            }
+        }
+    }
+
+    // 根据班级显示考勤
+    function showClasses(day_classes_frequency, max_people_number) {
+        for (let i = 1; i <= day_classes_frequency; i++) {
+            // 创建标签
+            let newTr = document.createElement("tr");
+            let attendance_table = `
+                <td class="header" colspan="1">
+                    <span>班次：${i}  <span id="dateTime${userColoumnsNumber}" style="color: red;font-size: 12px"></span></span>
+                        <div style="margin-top: 5px">
+                            <sapn>签到：</sapn>
+                            <input type="datetime-local" id="newStartDate${userColoumnsNumber}" onchange="mam_hour_func(${userColoumnsNumber})">
+                         </div>
+                        <div style="margin-top: 5px">
+                            <sapn>签退：</sapn>
+                            <input type="datetime-local" id="newEndDate${userColoumnsNumber}" onchange="mam_hour_func(${userColoumnsNumber})">
+                        </div>
+                </td>
+            `;
+            let people_number_table = document.createElement("td");
+            people_number_table.setAttribute("colspan", "4");
+            let div = document.createElement("div");
+            div.style.display = "flex";
+            div.style.alignItems = "center";
+            div.style.flexWrap = "wrap";
+            // 循环最人数
+            let people_tables = ''
+            for (let j = 0; j < max_people_number; j++) {
+                let div = `
+                <div style="margin-left: 5xp">
+                    <span style="font-size: 12px">员工 ${j + 1}：</span>
+                    <select id="employeeSelect${userColoumnsNumber}-${j}">
+                        <option value="" disabled selected>-- 请选员工 --</option>
+                        {% for i in user_data_list_all %}
+                        <option value="{{i.id}}">{{i.user_name}}</option>
+                        {% endfor%}
+                    </select>
+                    <input type="text" placeholder="请输入薪酬" id="pay${userColoumnsNumber}-${j}"
+                    style="text-align: center;position: relative;top: 6px;">
+                </div>`
+                people_tables += div
+            }
+            div.innerHTML = people_tables
+            people_number_table.appendChild(div)
+            newTr.innerHTML = attendance_table
+            newTr.appendChild(people_number_table)
+            content_table.appendChild(newTr); // 插入到表格中
+            userColoumnsNumber += 1
+        }
+        let newTr2 = document.createElement("tr");
+        newTr2.setAttribute("colspan", "5");
+        newTr2.innerHTML = `
+                 <th class="header" colspan="5" style="text-align: right">
+                    <span>产量：</span>
+                    <input type="number" id="classes_production_quantity_number">
+                </th>
+            `
+        content_table.appendChild(newTr2)
+
+    }
+</script>
+</html>

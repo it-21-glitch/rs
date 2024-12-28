@@ -1,0 +1,51 @@
+        table {
+            border-collapse: collapse;
+            border: 2px solid rgb(140, 140, 140);
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            width: 70%; /* 确保表格宽度自适应父容器 */
+            display: table; /* 确保表格正常显示 */
+            overflow-x: auto; /* 当内容超出屏幕宽度时允许横向滚动 */
+            overflow-y: scroll; /* 当内容超出屏幕宽度时允许横向滚动 */
+            border-spacing: 0;
+        }
+
+        thead,
+        tfoot {
+            background-color: rgb(228, 240, 245);
+        }
+
+        th,
+        td {
+            border: 1px solid rgb(160, 160, 160);
+            padding: 7px 20px;
+            white-space: normal; /* 允许文本换行 */
+            text-align: center; /* 左对齐文本 */
+        }
+
+        th {
+            width: auto; /* 自适应宽度 */
+            text-overflow: ellipsis; /* 超出部分显示省略号 */
+            overflow: hidden; /* 隐藏溢出的文本 */
+            position: sticky; /* 使表头在滚动时保持固定 */
+            top: 0; /* 固定在顶部 */
+            background-color: rgb(228, 240, 245); /* 保持背景颜色 */
+            z-index: 10; /* 确保表头在滚动时位于内容之上 */
+        }
+
+        td:last-of-type {
+            text-align: center;
+        }
+
+        tbody > tr:nth-of-type(even) {
+            background-color: rgb(237, 238, 242);
+        }
+
+        tfoot th {
+            text-align: right;
+        }
+
+        tfoot td {
+            font-weight: bold;
+        }

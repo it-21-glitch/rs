@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>考勤信息</title>
+    <link rel="stylesheet" href="/static/css/rs_attendance.css">
+</head>
+<body>
+<div style="width: 80%;margin-left: 5px;margin-top: 5px">
+    <div style="color:red;height: 20px;font-size: 14px">
+        <span>{{error}}</span>
+    </div>
+    <div class="table-container margin_top">
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>员工名称</th>
+                <th>上班时间</th>
+                <th>下班时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in data_list_all %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>{{i.user_name}}</td>
+                <td>{{i.start_time}}</td>
+                <td>{{i.end_time}}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">没有数据。</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

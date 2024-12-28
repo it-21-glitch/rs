@@ -1,0 +1,114 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+.content {
+    width: 70%;
+    margin: 0 auto;
+    height: 100vh;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+
+.required {
+    color: red;
+}
+
+.header {
+    font-weight: bold;
+}
+
+input:focus {
+    border-color: #66afe9; /* 聚焦时的边框颜色 */
+    outline: none; /* 移除默认的聚焦轮廓 */
+}
+
+input[type='number'], input[type='text'] {
+    border: none;
+    border-bottom: 1px solid;
+    padding: 4px
+}
+
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+
+}
+
+input[type="date"], input[type='datetime-local'] {
+    border: 1px solid #ccc; /* 边框颜色和宽度 */
+    padding: 4px; /* 内边距 */
+    font-size: 14px; /* 字体大小 */
+    border-radius: 4px; /* 边框圆角 */
+    box-sizing: border-box; /* 边框和内边距包含在宽度内 */
+    width: 170px; /* 指定宽度 */
+    background-color: #fff; /* 背景颜色 */
+    color: #333; /* 字体颜色 */
+}
+
+input[type="date"]:focus, input[type='datetime-local']:focus {
+    border-color: #66afe9; /* 聚焦时的边框颜色 */
+    outline: none; /* 移除默认的聚焦轮廓 */
+    box-shadow: 0 0 8px rgba(102, 175, 233, 0.6); /* 聚焦时的阴影效果 */
+}
+
+select {
+    width: 177px;
+    height: 35px;
+    color: #333;
+    font-size: 12px;
+    background-color: #fff;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    border: none;
+    border-bottom: 1px solid;
+}
+
+select:disabled {
+    background-color: #f0f0f0;
+    color: #999;
+}
+
+select:focus {
+    border-color: #66afe9;
+    outline: none;
+}
+
+option {
+    display: block; /* 使选项作为块级元素显示 */
+    text-align: center; /* 水平居中文本 */
+    padding: 0; /* 移除内边距 */
+    background-color: #f8f8f8; /* 设置选项的背景颜色 */
+    border-bottom: 1px solid #e7e7e7; /* 设置选项之间的分隔线 */
+}
+
+/* 移除最后一个选项的分隔线 */
+option:last-child {
+    border-bottom: none;
+}
+
+
+.content::-webkit-scrollbar {
+    display: none;
+}
+
+.delete-button {
+    display: none; /* 默认隐藏按钮 */
+}
+.delete-button.show {
+    display: block; /* 显示按钮 */
+}
+select {
+    color: #dc282c;
+}

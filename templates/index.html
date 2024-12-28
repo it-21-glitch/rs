@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <script src="/static/jquery.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="/static/css/index.css">
+</head>
+<body>
+<a id="downloadLink" style="display: none;"></a>
+<div class="load" id="load" hidden="hidden"
+     style="background-color:rgba(245,245,245,0.5);height:100vh;z-index: 1999;width: 100%;position: absolute">
+    <samp style="margin-top:300px;text-align: center;display: block;font-size: 18px;pointer-events: none;">正在加载...</samp>
+</div>
+<div style="width: 95%;margin-left: 5px;margin-top: 10px">
+    <div style="height: 30px;text-align: right">
+        <a href="/add_records" target="_blank"
+           style="text-decoration: none;border: 1px solid;padding: 5px;font-size: 12px;">添加记录</a>
+    </div>
+    <div class="table-search margin_top">
+        <label for="po">订单号：</label>
+        <input type="text" id="po" class="input_style">
+        <label for="item">item号：</label>
+        <input type="text" id="item" class="input_style">
+        <label for="start_date">起始日期：</label>
+        <input type="date" id="start_date">
+        <label for="end_date">终止日期：</label>
+        <input type="date" id="end_date">
+        <button onclick="search()">搜索</button>
+        <button onclick="reload()">重置</button>
+    </div>
+    <div class="table-container margin_top">
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>录入时间</th>
+                <th>订单</th>
+                <th>item号</th>
+                <th>材质</th>
+                <th>工序</th>
+                <th>产量</th>
+                <th>设备</th>
+                <th>产品规格</th>
+                <th>人数</th>
+                <th>考勤记录</th>
+                <th>考勤截图</th>
+                <th>审核状态</th>
+                <th>审核时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in data_list_all %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>{{i.entry_time}}</td>
+                <td>{{i.po}}</td>
+                <td>{{i.item}}</td>
+                <td>{{i.material_name}}</td>
+                <td>{{i.process_name}}</td>
+                <td>{{i.output_number}}</td>
+                <td>{{i.equipment_name}}</td>
+                <td>{{i.specification_name}}</td>
+                <td>{{i.people_number}}</td>
+                <td>
+                    <a href="/rs/user/attendance?pk={{i.id}}" target="_blank" style="text-decoration: none;">查看</a>
+                </td>
+                <td>
+                    {% if i.attendance_picture == '\\' %}
+
+                    {% else %}
+                    <a href="{{i.attendance_picture}}" target="_blank" style="text-decoration: none;">查看</a>
+                    {%endif%}
+
+                </td>
+                <td>{{i.examine_status | audit}}</td>
+                <td>
+                    {% if i.examine_status %}
+                    {{i.examine_time}}
+                    {%endif%}
+                </td>
+                <td>
+                    {% if i.examine_status %}
+                    <button onclick="download({{i.id}})">下载</button>
+                    {%endif%}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="17">没有数据。</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!--  页码  -->
+    {% if data_total > 12 %}
+    <div class="table-page margin_top" style="float: right;display: flex;align-items: center;">
+        <div>
+            <span style="font-size: 14px">数据总数：{{data_total}} 条</span>
+        </div>
+        <ul class="pagination">
+            {% if page == 1 %}
+            <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ page -1 }}">&laquo;</a></li>
+            {% endif%}
+            {% for page_num, class_ in pagination_links %}
+            <li class="page-item {{ class_ }}">
+                <a class="page-link" href="{{ class_ }}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+            {% if page == page_total %}
+            <li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">&raquo;</a></li>
+            {% endif%}
+        </ul>
+        <div>
+            <span style="font-size: 14px">总页码数：{{page_total}} 页</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<script>
+    var csrf_token = $('meta[name=csrf-token]').attr('content');
+
+    function hiddenLoad() {
+        let load = document.getElementById('load');
+        if (load.hidden) {
+            load.removeAttribute('hidden');
+        } else {
+            load.setAttribute('hidden', 'hidden');
+        }
+    }
+
+    // 搜索
+    function search() {
+        let po = document.getElementById('po').value
+        let item = document.getElementById('item').value
+        let start_date = document.getElementById('start_date').value
+        let end_date = document.getElementById('end_date').value
+        let url = '?page=1';
+        if (po) {
+            url += `&po=${po}`
+        }
+        if (item) {
+            url += `&item=${item}`
+        }
+        if (start_date) {
+            url += `&start_date=${start_date}`
+        }
+        if (end_date) {
+            url += `&end_date=${end_date}`
+        }
+        window.location.href = url
+    }
+
+    // 重置
+    function reload() {
+        window.location.href = '?page=1'
+    }
+
+    function downloadFile(file_path) {
+        document.getElementById('downloadLink').href = `/download_file_path?file_path=${file_path}`;
+        document.getElementById('downloadLink').click();
+    }
+
+    // 获取下载
+    function download(pk) {
+        hiddenLoad();
+        $.ajax({
+            url: '/get_download_file_path',  // 服务器端上传文件的 URL
+            type: 'POST',
+            data: {pk: pk},
+            headers: {
+                'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
+            },
+            ContentType: 'application/json',
+            dataType: "JSON",
+            success: function (response) {
+                let code = response.code
+                if (code === 200) {
+                    let file_name = response.file_path;
+                    downloadFile(file_name);
+                } else {
+                    alert("下载失败！");
+                }
+                hiddenLoad();
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+                hiddenLoad();
+            }
+        });
+    }
+</script>
+</body>
+</html>

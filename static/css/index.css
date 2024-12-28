@@ -1,0 +1,135 @@
+     body {
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            border: 2px solid rgb(140, 140, 140);
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            width: 100%; /* 确保表格宽度自适应父容器 */
+            display: table; /* 确保表格正常显示 */
+            overflow-x: auto; /* 当内容超出屏幕宽度时允许横向滚动 */
+            overflow-y: scroll; /* 当内容超出屏幕宽度时允许横向滚动 */
+            border-spacing: 0;
+        }
+
+        thead,
+        tfoot {
+            background-color: rgb(228, 240, 245);
+        }
+
+        th,
+        td {
+            border: 1px solid rgb(160, 160, 160);
+            padding: 15px 20px;
+            white-space: normal; /* 允许文本换行 */
+            text-align: center; /* 左对齐文本 */
+        }
+
+        th {
+            width: auto; /* 自适应宽度 */
+            text-overflow: ellipsis; /* 超出部分显示省略号 */
+            overflow: hidden; /* 隐藏溢出的文本 */
+            position: sticky; /* 使表头在滚动时保持固定 */
+            top: 0; /* 固定在顶部 */
+            background-color: rgb(228, 240, 245); /* 保持背景颜色 */
+            z-index: 10; /* 确保表头在滚动时位于内容之上 */
+        }
+
+        td:last-of-type {
+            text-align: center;
+        }
+
+        tbody > tr:nth-of-type(even) {
+            background-color: rgb(237, 238, 242);
+        }
+
+        tfoot th {
+            text-align: right;
+        }
+
+        tfoot td {
+            font-weight: bold;
+        }
+
+        .margin_top {
+            margin-top: 5px;
+        }
+
+        .input_style {
+            border: none;
+            padding: 4px; /* 内边距 */
+            border-bottom: 1px solid
+        }
+
+        input:focus {
+            border-color: #66afe9; /* 聚焦时的边框颜色 */
+            outline: none; /* 移除默认的聚焦轮廓 */
+        }
+
+        input[type="date"] {
+            border: 1px solid #ccc; /* 边框颜色和宽度 */
+            padding: 4px; /* 内边距 */
+            font-size: 14px; /* 字体大小 */
+            border-radius: 4px; /* 边框圆角 */
+            box-sizing: border-box; /* 边框和内边距包含在宽度内 */
+            width: 170px; /* 指定宽度 */
+            background-color: #fff; /* 背景颜色 */
+            color: #333; /* 字体颜色 */
+        }
+
+        input[type="date"]:focus {
+            border-color: #66afe9; /* 聚焦时的边框颜色 */
+            outline: none; /* 移除默认的聚焦轮廓 */
+            box-shadow: 0 0 8px rgba(102, 175, 233, 0.6); /* 聚焦时的阴影效果 */
+        }
+
+        /* 分页容器样式 */
+        .pagination {
+            display: flex; /* 使用flex布局 */
+            list-style-type: none; /* 移除列表样式 */
+            padding: 0; /* 移除内边距 */
+            margin: 0; /* 移除外边距 */
+        }
+
+        /* 分页项样式 */
+        .pagination li {
+            margin: 5px; /* 每个分页项之间的外边距 */
+        }
+
+        /* 分页链接样式 */
+        .pagination a {
+            text-align: center;
+            line-height: 5px;
+            font-size: 12px;
+            color: #333; /* 文字颜色 */
+            text-decoration: none; /* 移除下划线 */
+            padding: 7px 10px; /* 内边距 */
+            border: 1px solid #ddd; /* 边框 */
+            background-color: #f9f9f9; /* 背景颜色 */
+            transition: background-color 0.3s, color 0.3s; /* 平滑背景和文字颜色变化 */
+        }
+
+        /* 当鼠标悬停在分页链接上时的样式 */
+        .pagination a:hover {
+            background-color: #ddd; /* 背景颜色变化 */
+            color: #555; /* 文字颜色变化 */
+        }
+
+        /* 当前页码的样式 */
+        .pagination .active a {
+            background-color: #007bff; /* 当前页码背景颜色 */
+            color: white; /* 当前页码文字颜色 */
+            border: 1px solid #007bff; /* 当前页码边框颜色 */
+            cursor: default; /* 禁用鼠标样式 */
+        }
+
+        /* 禁用页码的样式 */
+        .pagination .disabled a {
+            color: #999; /* 禁用页码文字颜色 */
+            pointer-events: none; /* 禁用点击事件 */
+            cursor: not-allowed; /* 禁用鼠标样式 */
+        }

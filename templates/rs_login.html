@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+        input[type="date"], input[type='datetime-local'] {
+            border: 1px solid #ccc; /* 边框颜色和宽度 */
+            padding: 4px; /* 内边距 */
+            font-size: 14px; /* 字体大小 */
+            border-radius: 4px; /* 边框圆角 */
+            box-sizing: border-box; /* 边框和内边距包含在宽度内 */
+            width: 170px; /* 指定宽度 */
+            background-color: #fff; /* 背景颜色 */
+            color: #333; /* 字体颜色 */
+        }
+
+        input[type="date"]:focus, input[type='datetime-local']:focus {
+            border-color: #66afe9; /* 聚焦时的边框颜色 */
+            outline: none; /* 移除默认的聚焦轮廓 */
+            box-shadow: 0 0 8px rgba(102, 175, 233, 0.6); /* 聚焦时的阴影效果 */
+        }
+
+        input:focus {
+            border-color: #66afe9; /* 聚焦时的边框颜色 */
+            outline: none; /* 移除默认的聚焦轮廓 */
+        }
+
+        input[type='password'], input[type='text'] {
+            border: none;
+            border-bottom: 1px solid;
+            padding: 4px
+        }
+
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+
+        }
+
+        .login {
+            margin: 0 auto;
+            width: 80%;
+            height: 50vh;
+        }
+
+        .form_post {
+            height: 55vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center
+        }
+    </style>
+</head>
+<body>
+<div class="login">
+    <form method="post" class="form_post">
+        <!--验证-->
+        {{ form.csrf_token }}
+        <div style="margin-top: 10px">
+            {{ form.name.label }} {{ form.name(size=20) }}
+        </div>
+        <div style="margin-top: 10px">
+            {{ form.pwd.label }} {{ form.pwd(size=20) }}
+        </div>
+        <div style="margin-top: 10px">
+            {{ form.submit() }}
+            <span style="color: red;font-size: 12px" id="error">{{ error }}</span>
+        </div>
+    </form>
+</div>
+</body>
+<script>
+
+</script>
+</html>
