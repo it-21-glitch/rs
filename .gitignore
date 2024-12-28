@@ -1,0 +1,5 @@
+.idea
+.venv
+资料
+static/attendance_picture/*.zip
+static/attendance_picture/*.png
