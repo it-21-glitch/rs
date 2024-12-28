@@ -8,7 +8,7 @@ from config import VerifyForm, get_db, regular_function, rule_data_base
 
 # RS登录
 def rs_login():
-    title = 'RS登录页面'
+    title = '登录'
     form = VerifyForm()
     user_name = session.get('username')
     if user_name:
