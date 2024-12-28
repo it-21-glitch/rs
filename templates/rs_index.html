@@ -26,7 +26,9 @@
                 <input type="submit"/>
             </div>
         </form>
-         <div style="margin-left: 5px;display: inline-block;top:-23px;left: 416px;position: relative" onclick="lookRS()"><button>查看规则信息</button></div>
+        <div style="margin-left: 5px;display: inline-block;top:-23px;left: 416px;position: relative" onclick="lookRS()">
+            <button>查看规则信息</button>
+        </div>
     </div>
     <div class="table-search margin_top">
         <label for="po">订单号：</label>
@@ -40,6 +42,7 @@
         <button onclick="search()">搜索</button>
         <button onclick="reload()">重置</button>
         <div style="float: right">
+            <button onclick="examineAll()">批量审核</button>
             <button onclick="logout()">退出登录</button>
         </div>
     </div>
@@ -79,19 +82,22 @@
                 <td>{{i.specification_name}}</td>
                 <td>{{i.people_number}}</td>
                 <td>
-                    <a href="/rs/user/attendance?pk={{i.id}}" target="_blank" style="text-decoration: none;">查看</a>
+                    <a href="/rs/rs_sign_in_record?pk={{i.id}}" target="_blank" style="text-decoration: none;">查看考勤</a>
                 </td>
                 <td>
                     {% if i.attendance_picture == '\\' %}
                     {% else %}
-                    <a href="{{i.attendance_picture}}" target="_blank" style="text-decoration: none;">查看</a>
+                    <a href="{{i.attendance_picture}}" target="_blank" style="text-decoration: none;">查看考勤截图</a>
                     {%endif%}
                 </td>
                 <td>{{i.examine_status | audit}}</td>
-                <td>{{i.examine_time}}</td>
                 <td>
                     {% if i.examine_status %}
-                    {% else %}
+                    {{i.examine_time}}
+                    {% endif%}
+                </td>
+                <td>
+                    {% if not i.examine_status %}
                     <button onclick="examine({{i.id}})">审核</button>
                     {%endif%}
                 </td>
@@ -165,7 +171,7 @@
         var formData = new FormData();
         formData.append('file', $('#file-input')[0].files[0]);
         $.ajax({
-            url: '/upload',  // 服务器端上传文件的 URL
+            url: '/rs/rs_upload_attendance',  // 服务器端上传文件的 URL
             type: 'POST',
             data: formData,
             processData: false,  // 禁止 jQuery 默认的处理过程（文件上传）
@@ -222,7 +228,7 @@
     function examine(pk) {
         hiddenLoad();
         $.ajax({
-            url: '/rs/user/examine',  // 服务器端上传文件的 URL
+            url: '/rs/rs_to_examine',  // 服务器端上传文件的 URL
             type: 'POST',
             data: {pk: pk},
             headers: {
@@ -250,7 +256,7 @@
     // 退出登录
     function logout() {
         $.ajax({
-            url: '/rs/user/logout',  // 服务器端上传文件的 URL
+            url: '/rs/logout',  // 服务器端上传文件的 URL
             type: 'DELETE',
             headers: {
                 'X-CSRFToken': csrf_token  // 添加 CSRF Token 到请求头
@@ -274,9 +280,35 @@
 
     // 查看
     function lookRS() {
-        // window.location.href = '/static/rule/rule.html'
-        window.open( '/static/rule/rule.html','_blank')
+        window.open('/static/rule/rule.html', '_blank')
     }
 
+    // 批量审核
+    function examineAll() {
+         hiddenLoad();
+        $.ajax({
+            url: '/rs/rs_to_examine_all',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
+            },
+            ContentType: 'application/json',
+            dataType: "JSON",
+            success: function (response) {
+                let code = response.code
+                if (code === 200) {
+                    alert("审核成功！");
+                    location.reload();
+                } else {
+                    alert("审核失败！");
+                    hiddenLoad();
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+                hiddenLoad();
+            }
+        });
+    }
 </script>
 </html>

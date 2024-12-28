@@ -6,6 +6,6 @@ db = local()
 
 def get_db():
     if not hasattr(db, 'conn'):
-        db.conn = sqlite3.connect('rs_project.db')
+        db.conn = sqlite3.connect('RSDataBase.db')
     return db.conn
 

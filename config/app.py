@@ -1,7 +1,8 @@
 import os
 from flask import Flask
 from flask_wtf import CSRFProtect
-from .settings import audit_status
+from .tools import audit_status
+
 
 PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
