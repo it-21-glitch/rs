@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 from flask import render_template, redirect, url_for, request, session, make_response
 
-from config import app, VerifyForm, get_db, VerifyUpdateForm, regular_function, rule_data_base, generation_xlsx
+from config import app, VerifyForm, get_db, regular_function, rule_data_base, generation_xlsx
 
 
 # 工厂首页
