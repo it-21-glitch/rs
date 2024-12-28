@@ -16,9 +16,14 @@ def create_flask_app(classobj):
     # 检测文件夹
     generation_xlsx = os.path.join(PATH, 'static', "generation_xlsx")
     attendance_picture = os.path.join(PATH, 'static', "attendance_picture")
+    logs = os.path.join(PATH, 'logs')
+
     if not os.path.exists(generation_xlsx):
         os.mkdir(generation_xlsx)
 
     if not os.path.exists(attendance_picture):
         os.mkdir(attendance_picture)
+
+    if not os.path.exists(logs):
+        os.mkdir(logs)
     return flask_app  # 返回flask框架的app对象

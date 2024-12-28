@@ -2,7 +2,7 @@ import subprocess
 import logging
 
 logging.basicConfig(
-    filename='./log/access.log.text',
+    filename='./logs/access.log.text',
     format='%(asctime)s - %(name)s - %(levelname)s -%(module)s : %(message)s',
     level=10
 )

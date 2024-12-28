@@ -449,7 +449,7 @@
             let people_tables = ''
             for (let j = 0; j < max_people_number; j++) {
                 let div = `
-                <div style="margin-left: 5xp">
+                <div style="margin-left: 5px">
                     <span style="font-size: 12px">员工 ${j + 1}：</span>
                     <select id="employeeSelect${userColoumnsNumber}-${j}">
                         <option value="" disabled selected>-- 请选员工 --</option>
@@ -486,7 +486,6 @@
     }
     // 下载花名册
     function downloadRoster() {
-
         document.getElementById('downloadLink').href = `/download_file_roster`;
         document.getElementById('downloadLink').click();
     }
