@@ -379,6 +379,18 @@ def download_file_path():
         return response
 
 
+# 花名册
+@app.route('/download_file_roster', methods=["GET"])
+def download_file_roster():
+    file_path = os.path.join("static",'template_xlsx','rosterTemplate.xlsx')
+    file_name = 'template.xlsx'
+    with open(file_path, mode='rb') as file:
+        response = make_response(file.read())
+        response.headers['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{file_name}'
+        response.mimetype = 'text/html'  # 设置正确的 MIME 类型
+        return response
+
+
 # RS登录页面
 @app.route("/rs/user/login", methods=["GET", "POST"])
 def login():

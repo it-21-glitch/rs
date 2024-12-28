@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/static/css/add_records.css">
 </head>
 <body>
+<a id="downloadLink" style="display: none;"></a>
 <div class="load" id="load" hidden="hidden"
      style="background-color:rgba(236,229,229,0.5);height:100vh;z-index: 1999;width: 100%;position: absolute">
     <samp style="margin-top:50px;text-align: center;display: block;font-size: 18px;pointer-events: none;color: black">正在加载...</samp>
@@ -67,17 +68,18 @@
                 <td class="header">上传考勤截图：</td>
                 <td colspan="">
                     <input type="file" id="file" accept=".jpg, .png, .webp">
-                    <span style=" font-size: 12px;display: flex;">支持上传图片格式：.jpg，.png，.webp，图片数量：1。</span>
+                    <span style=" font-size: 12px;display: flex;color: #278dc2">支持上传图片格式：.jpg、.png、.webp。图片数量：1张。</span>
                 </td>
-                <td class="header" style="color: red">新员工新增（新入职员工时进行添加）：</td>
+                <td class="header">上传员工花名册：</td>
                 <td>
-                    <input type="text" id="newEmployeeInput" placeholder="输入新员工姓名"
-                           style="height: 28px;width: 150px;text-align: center">
-                    <input type="date" id="newAgeInput" placeholder="新员工的出生日期"
-                           style="height: 28px;width: 150px;text-align: center">
-                    <button onclick="addEmployee()">
-                        添加
+                    <input type="file" id="file_xlsx" accept=".xlsx, .xls">
+                    <button onclick="updateRoster(()">
+                        保存添加
                     </button>
+                    <button onclick="downloadRoster()" style="float: right">
+                        下载花名册模板
+                    </button>
+                    <span style=" font-size: 12px;display: flex;color: #278dc2">花名册只需上传一次就可以，如有变化可以上传最新的进行覆盖。</span>
                 </td>
             </tr>
             <tr>
@@ -477,6 +479,16 @@
             `
         content_table.appendChild(newTr2)
 
+    }
+    // 上传花名册
+    function updateRoster() {
+        
+    }
+    // 下载花名册
+    function downloadRoster() {
+
+        document.getElementById('downloadLink').href = `/download_file_roster`;
+        document.getElementById('downloadLink').click();
     }
 </script>
 </html>

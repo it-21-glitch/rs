@@ -34,6 +34,7 @@
         <table>
             <thead>
             <tr>
+                <th>勾选</th>
                 <th>#</th>
                 <th>录入时间</th>
                 <th>订单</th>
@@ -54,6 +55,7 @@
             <tbody>
             {% for i in data_list_all %}
             <tr>
+                <td><input type="checkbox"></td>
                 <td>{{loop.index}}</td>
                 <td>{{i.entry_time}}</td>
                 <td>{{i.po}}</td>
