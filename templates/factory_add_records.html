@@ -94,6 +94,7 @@
             </tr>
         </table>
     </div>
+
 </div>
 <hr style=" width: 70%;margin: 0 auto">
 <div class="addButton" style=" width: 70%;margin: 5px auto;display: flex;justify-content: space-between;">
@@ -137,13 +138,34 @@
                     min_people_number = response.min_people_number // 最小人数
                     user_list = response.user_list // 工序员工列表
                     if (code === 200) {
-                        document.getElementById("message").innerText = message;
+                        document.getElementById("message").innerHTML = message + `<a style="color: #007bff" href="#" id="help">help</a>`;
                         // 删除列
                         let trArray = Array.from(content_table.querySelectorAll("tr"));
                         for (let i = 6; i < trArray.length; i++) {
                             content_table.removeChild(trArray[i])
                         }
                         showClasses(day_classes_frequency, max_people_number)
+                        document.getElementById("help").addEventListener("click", function () {
+                            let tr = content_table.querySelectorAll("tr")
+                            for (let i = 6; i < tr.length; i++) {
+                                if (tr[i].getAttribute("colspan")) {
+                                    continue;
+                                }
+
+                                let tr_div = tr[i].querySelectorAll('td')[1].querySelectorAll("div")[0].querySelectorAll("div")
+                                for (let j = 0; j < tr_div.length; j++) {
+                                    let selectElement = tr_div[j].querySelector("select")
+                                    let options = selectElement.getElementsByTagName("option");
+                                    // 随机选择一个选项（排除第一个禁用选项）
+                                    selectElement.selectedIndex = Math.floor(Math.random() * (options.length - 1)) + 1;
+                                    tr_div[j].querySelector("input").value = Math.floor(Math.random() * 1000).toString();
+                                    if (j === min_people_number - 1) {
+                                        break
+                                    }
+
+                                }
+                            }
+                        })
 
                     }
                 }
@@ -386,6 +408,11 @@
 
     // 根据班级显示考勤
     function showClasses(day_classes_frequency, max_people_number) {
+        let option_tables = ''
+        for (let p = 0; p < user_list.length; p++) {
+            option_tables += ` <option value="${user_list[p].user_id}">${user_list[p].user_name}</option>`
+        }
+
         for (let i = 1; i <= day_classes_frequency; i++) {
             // 创建标签
             let newTr = document.createElement("tr");
@@ -409,7 +436,6 @@
             div.style.alignItems = "center";
             div.style.flexWrap = "wrap";
             // 循环最人数
-            console.log(user_list)
             let people_tables = ''
             for (let j = 0; j < max_people_number; j++) {
                 let div = `
@@ -417,9 +443,7 @@
                     <span style="font-size: 12px">员工 ${j + 1}：</span>
                     <select id="employeeSelect${userColoumnsNumber}-${j}">
                         <option value="" disabled selected>-- 请选员工 --</option>
-                        {% for i in user_list %}
-                        <option value="{{i.id}}">{{i.user_name}}</option>
-                        {% endfor%}
+                         ${option_tables}
                     </select>
                     <input type="text" placeholder="请输入薪酬" id="pay${userColoumnsNumber}-${j}"
                     style="text-align: center;position: relative;top: 6px;">
@@ -495,5 +519,8 @@
         document.getElementById('downloadLink').href = `/factory_download_template_file_roster`;
         document.getElementById('downloadLink').click();
     }
+
+    // 帮助函数
+
 </script>
 </html>

@@ -100,6 +100,7 @@ def rs_index():
                 main.record_sheet.attendance_picture
             FROM 
                 main.record_sheet
+            ORDER BY id DESC 
             LIMIT {per_page} OFFSET {(page - 1) * 12};
     """
     else:
@@ -121,6 +122,7 @@ def rs_index():
                 FROM 
                     main.record_sheet
                 WHERE {conditions}
+                ORDER BY id DESC 
                 LIMIT {per_page} OFFSET {(page - 1) * 12};
             """
     cursor.execute(get_sql)

@@ -69,6 +69,7 @@ def factory_index():
             FROM 
                 main.record_sheet
             WHERE examine_status == 1
+             ORDER BY id DESC 
             LIMIT {per_page} OFFSET {(page - 1) * 12};
         """
     else:
@@ -90,6 +91,7 @@ def factory_index():
                 FROM 
                     main.record_sheet
                 WHERE {conditions}
+                 ORDER BY id DESC 
                 LIMIT {per_page} OFFSET {(page - 1) * 12};
                 """
     cursor.execute(get_sql)
@@ -421,4 +423,5 @@ def factory_add_user():
         })
     with open(file_path_json, mode='w', encoding='utf-8') as f:
         f.write(json.dumps(user_list))
+    os.remove(file_path)
     return {"code": 200}
