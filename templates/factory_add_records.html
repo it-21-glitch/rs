@@ -73,8 +73,8 @@
                 <td class="header">上传员工花名册：</td>
                 <td>
                     <input type="file" id="file_xlsx" accept=".xlsx, .xls">
-                    <button onclick="updateRoster(()">
-                        保存添加
+                    <button onclick="updateRoster()">
+                        上传
                     </button>
                     <button onclick="downloadRoster()" style="float: right">
                         下载花名册模板
@@ -112,6 +112,7 @@
     var classes_man_hour = 0
     var max_people_number = 0
     var min_people_number = 0
+    var user_list = []
 
     function showMessage() {
         let specsSelect = document.getElementById("specsSelect").value // 规格
@@ -134,6 +135,7 @@
                     max_people_number = response.max_people_number // 最大人数
                     classes_man_hour = response.classes_man_hour // 工时
                     min_people_number = response.min_people_number // 最小人数
+                    user_list = response.user_list // 工序员工列表
                     if (code === 200) {
                         document.getElementById("message").innerText = message;
                         // 删除列
@@ -234,45 +236,6 @@
         request("equipment", selectedValue);
     }
 
-    //添加员工方法
-    function addEmployee() {
-        hiddenLoad();
-        var newEmployeeInput = document.getElementById('newEmployeeInput');
-        var newAgeInput = document.getElementById('newAgeInput');
-        var newEmployeeName = newEmployeeInput.value.trim();
-        var newAgeNumber = newAgeInput.value.trim();
-        // 检查输入是否为空
-        if (newEmployeeName === '' || newAgeNumber === "") {
-            alert('请输入新员工姓名,年龄后在进行添加操作!');
-            hiddenLoad();
-            return;
-        }
-        $.ajax({
-            url: '/add_user',  // 服务器端上传文件的 URL
-            type: 'POST',
-            data: {"user_name": newEmployeeName, 'age': newAgeNumber},
-            headers: {
-                'X-CSRFToken': csrf_token  // 添加 CSRF Token 到请求头
-            },
-            success: function (response) {
-                let code = response.code
-                let data = response.data
-                if (code === 200) {
-                    alert("添加成功!")
-                    newEmployeeInput.value = '';
-                    newAgeInput.value = '';
-                } else {
-                    alert("添加失败!")
-                }
-                hiddenLoad();
-                window.reload();
-            },
-            error: function (xhr, status, error) {
-                console.error('Upload failed:', error);
-                hiddenLoad();
-            }
-        });
-    }
 
     // 下一道工序
     function nextProcedure() {
@@ -446,6 +409,7 @@
             div.style.alignItems = "center";
             div.style.flexWrap = "wrap";
             // 循环最人数
+            console.log(user_list)
             let people_tables = ''
             for (let j = 0; j < max_people_number; j++) {
                 let div = `
@@ -453,7 +417,7 @@
                     <span style="font-size: 12px">员工 ${j + 1}：</span>
                     <select id="employeeSelect${userColoumnsNumber}-${j}">
                         <option value="" disabled selected>-- 请选员工 --</option>
-                        {% for i in user_data_list_all %}
+                        {% for i in user_list %}
                         <option value="{{i.id}}">{{i.user_name}}</option>
                         {% endfor%}
                     </select>
@@ -483,7 +447,47 @@
 
     // 上传花名册
     function updateRoster() {
-
+        hiddenLoad();
+        let file_value = document.getElementById('file_xlsx').value
+        if (!file_value) {
+            alert("请选择文件后在点击上传！");
+            hiddenLoad();
+            return
+        }
+        let pathSuffix = file_value.split('.')[1].toLowerCase() // 截取后缀 转为小写
+        console.log(pathSuffix !== "xls")
+        if (["xlsx", "xls"].indexOf(pathSuffix) === -1) {
+            alert('上传错误！')
+            document.getElementById('file_xlsx').value = '';
+            hiddenLoad();
+            return;
+        }
+        var formData = new FormData();
+        formData.append('file', $('#file_xlsx')[0].files[0]);
+        $.ajax({
+            url: '/factory_add_user',  // 服务器端上传文件的 URL
+            type: 'POST',
+            data: formData,
+            processData: false,  // 禁止 jQuery 默认的处理过程（文件上传）
+            contentType: false,  // 禁止 jQuery 设置 contentType，使用浏览器默认的方式
+            headers: {
+                'X-CSRFToken': csrf_token  // 添加 CSRF Token 到请求头
+            },
+            success: function (response) {
+                var code = response.code
+                if (code === 200) {
+                    alert("上传成功！");
+                } else {
+                    alert("上传失败，文件有误！");
+                }
+                // document.getElementById('file_xlsx').value = '';
+                hiddenLoad();
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+                hiddenLoad();
+            }
+        });
     }
 
     // 下载花名册

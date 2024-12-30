@@ -163,7 +163,7 @@
         }
         var pathSuffix = file_value.split('.')[1].toLowerCase() // 截取后缀 转为小写
         if (pathSuffix !== "xlsx") {
-            alert('上传图片错误！')
+            alert('上传错误！')
             document.getElementById('upload-form').reset();
             hiddenLoad();
             return;

@@ -86,9 +86,9 @@ factory_bp.add_url_rule(
     methods=["POST"]
 )
 factory_bp.add_url_rule(
-    rule='/factory_download_attendance_and_production_records',
-    endpoint='factory_download_attendance_and_production_records',
-    view_func=factory_download_attendance_and_production_records,
+    rule='/factory_get_information_description',
+    endpoint='factory_get_information_description',
+    view_func=factory_get_information_description,
     methods=["GET"]
 )
 

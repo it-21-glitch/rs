@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import sqlite3
+import pandas as pd
 from datetime import datetime
 from flask import request, render_template, make_response
 
@@ -126,16 +127,9 @@ def factory_add_records():
     cursor.execute(get_material_sql)
     column_names = [description[0] for description in cursor.description]
     data_list_all = [dict(zip(column_names, row)) for row in cursor.fetchall()]
-    get_user_sql = f"""
-           SELECT id,user_name FROM main.factory_user
-        """
-    cursor.execute(get_user_sql)
-    column_names = [description[0] for description in cursor.description]
-    user_data_list_all = [dict(zip(column_names, row)) for row in cursor.fetchall()]
     cursor.close()
     db_conn.close()
-    return render_template('factory_add_records.html', data_list_all=data_list_all,
-                           user_data_list_all=user_data_list_all)
+    return render_template('factory_add_records.html', data_list_all=data_list_all)
 
 
 # 获取工序,设备
@@ -197,11 +191,27 @@ def factory_get_information_description():
     specs_number = data_dict.get(specs)
     person_number = round(specs_number / min_people_number)  # 班次个人产能
     message = f'使用设备：{equipment_name}，设备数量：{equipment_number}，工序最大人数：{max_people_number}，工序最小人数：{min_people_number}，班次：{day_classes_frequency}班，每班工时：{classes_man_hour}小时，班次产能：{specs_number}，班次个人产能：{person_number}。'
+
+    # 获取工序名称
+    get_process_sql = f"""
+        SELECT process_name FROM main.process WHERE id = '{data_dict.get("process_id")}'
+    """
+    cursor.execute(get_process_sql)
+    process_name = cursor.fetchone()[0]  # 工序的名称
+    user_list = []  # 当前工序的员工列表
+    file_path_json = os.path.join("static", 'roster.json')
+    with open(file_path_json, mode='r', encoding='utf-8') as f:
+        json_read_list = json.loads(f.read())
+    for i in json_read_list:
+        working_procedure = i.get("working_procedure")
+        if process_name == working_procedure:
+            user_list.append(i)
     cursor.close()
     db_conn.close()
+
     return {"code": 200, "message": message, "day_classes_frequency": day_classes_frequency,
             'classes_man_hour': classes_man_hour, "max_people_number": max_people_number,
-            'min_people_number': min_people_number}
+            'min_people_number': min_people_number, "user_list": user_list}
 
 
 # 附件获取
@@ -365,18 +375,50 @@ def factory_download_template_file_roster():
 
 # 根据上传花名册进行员工添加
 def factory_add_user():
-    user_name = request.form.get("user_name")
-    age = request.form.get("age")
-    insert_sql = f"""
-        INSERT INTO factory_user(user_name,user_age) VALUES ('{user_name}','{age}')
-    """
+    file = request.files.get("file")
+    if not file:
+        return {"code": 500}
+    file_path = os.path.join("static", 'roster_template.xlsx')
+    file_path_json = os.path.join("static", 'roster.json')
+    file.save(file_path)
+    df = pd.read_excel(file_path, sheet_name=0)
+    # 判断表格头部格式
+    if "工序" not in df.columns or "姓名" not in df.columns or "出生日期" not in df.columns:
+        return {"code": 500}
+    # 清空用户记录
     db_conn = get_db()
     cursor = db_conn.cursor()
+    del_sql = """
+        DELETE FROM main.factory_user;
+    """
     try:
-        cursor.execute(insert_sql)
+        cursor.executescript(del_sql)  # 使用executescript()执行多条SQL语句
         db_conn.commit()
     except sqlite3.Error as e:
+        # 如果发生错误，回滚事务
         db_conn.rollback()
-        return {'code': 500}
-    user_id = cursor.lastrowid
-    return {"code": 200, "data": {"id": user_id, "user_name": user_name}}
+        return {"code": 500}
+    user_list = []
+    for index, row in df.iterrows():
+        user_name = row.get("姓名")
+        user_age = row.get("出生日期")
+        working_procedure = row.get("工序")
+        insert_sql = f"""
+            INSERT INTO factory_user(user_name,user_age) VALUES ('{user_name}','{user_age}')
+        """
+
+        try:
+            cursor.execute(insert_sql)
+            db_conn.commit()
+        except sqlite3.Error as e:
+            db_conn.rollback()
+            return {'code': 500}
+        user_id = cursor.lastrowid
+        user_list.append({
+            "user_id": user_id,
+            "user_name": user_name,
+            "working_procedure": working_procedure
+        })
+    with open(file_path_json, mode='w', encoding='utf-8') as f:
+        f.write(json.dumps(user_list))
+    return {"code": 200}
