@@ -1,6 +1,7 @@
 import os
 import uuid
 import json
+import time
 import sqlite3
 import pandas as pd
 from datetime import datetime
@@ -235,6 +236,22 @@ def factory_download_attendance_and_production_records():
         response.headers['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{file_name}'
         response.mimetype = 'text/html'  # 设置正确的 MIME 类型
         return response
+
+
+# 文件删除信号，删除生成的考勤与生产记录信息
+def factory_delete_attendance_and_production_records():
+    file_path = request.args.get("file_path")
+    status = False
+    try:  # 尝试以读写模式打开文件
+        with open(file_path, 'r+'):
+            pass
+    except IOError:
+        status = True
+    while status:
+        print("文件正在使用中，请稍等片刻...")
+        time.sleep(5)
+    os.remove(file_path)
+    return {"code": 200}
 
 
 # 记录添加
