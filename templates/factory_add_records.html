@@ -120,7 +120,7 @@
         let equipmentSelect = document.getElementById("equipmentSelect").value // 设备
         if (specsSelect && materialSelect && processSelect && equipmentSelect) {
             $.ajax({
-                url: `/get_message?specsSelect=${specsSelect}&materialSelect=${materialSelect}&processSelect=${processSelect}&equipmentSelect=${equipmentSelect}`,
+                url: `/factory_get_information_description?specsSelect=${specsSelect}&materialSelect=${materialSelect}&processSelect=${processSelect}&equipmentSelect=${equipmentSelect}`,
                 method: 'GET',
                 headers: {
                     'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
@@ -167,7 +167,7 @@
     function request(status, pk) {
         hiddenLoad();
         $.ajax({
-            url: `/get_flow_data?status=${status}&pk=${pk}`,
+            url: `/factory_get_equipment_and_process?status=${status}&pk=${pk}`,
             method: 'GET',
             headers: {
                 'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
@@ -375,7 +375,7 @@
         formData.append('equipmentSelect', equipmentSelect);
         formData.append('userList', JSON.stringify(userList));
         $.ajax({
-            url: '/add_record',  // 服务器端上传文件的 URL
+            url: '/factory_add_record',  // 服务器端上传文件的 URL
             type: 'POST',
             data: formData,
             processData: false,  // 禁止 jQuery 默认的处理过程（文件上传）
@@ -480,13 +480,15 @@
         content_table.appendChild(newTr2)
 
     }
+
     // 上传花名册
     function updateRoster() {
-        
+
     }
+
     // 下载花名册
     function downloadRoster() {
-        document.getElementById('downloadLink').href = `/download_file_roster`;
+        document.getElementById('downloadLink').href = `/factory_download_template_file_roster`;
         document.getElementById('downloadLink').click();
     }
 </script>

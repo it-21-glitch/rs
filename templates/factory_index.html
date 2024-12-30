@@ -15,7 +15,7 @@
 </div>
 <div style="width: 95%;margin-left: 5px;margin-top: 10px">
     <div style="height: 30px;text-align: right">
-        <a href="/add_records" target="_blank"
+        <a href="/factory_add_records" target="_blank"
            style="text-decoration: none;border: 1px solid;padding: 5px;font-size: 12px;">添加记录</a>
     </div>
     <div class="table-search margin_top">
@@ -67,13 +67,13 @@
                 <td>{{i.specification_name}}</td>
                 <td>{{i.people_number}}</td>
                 <td>
-                    <a href="/rs/user/attendance?pk={{i.id}}" target="_blank" style="text-decoration: none;">查看</a>
+                    <a href="/rs/rs_sign_in_record?pk={{i.id}}" target="_blank" style="text-decoration: none;">查看考勤</a>
                 </td>
                 <td>
                     {% if i.attendance_picture == '\\' %}
 
                     {% else %}
-                    <a href="{{i.attendance_picture}}" target="_blank" style="text-decoration: none;">查看</a>
+                    <a href="{{i.attendance_picture}}" target="_blank" style="text-decoration: none;">查看考勤截图</a>
                     {%endif%}
 
                 </td>
@@ -166,7 +166,7 @@
     }
 
     function downloadFile(file_path) {
-        document.getElementById('downloadLink').href = `/download_file_path?file_path=${file_path}`;
+        document.getElementById('downloadLink').href = `/factory_download_attendance_and_production_records?file_path=${file_path}`;
         document.getElementById('downloadLink').click();
     }
 
@@ -174,7 +174,7 @@
     function download(pk) {
         hiddenLoad();
         $.ajax({
-            url: '/get_download_file_path',  // 服务器端上传文件的 URL
+            url: '/factory_get_attendance_and_production_records',  // 服务器端上传文件的 URL
             type: 'POST',
             data: {pk: pk},
             headers: {
