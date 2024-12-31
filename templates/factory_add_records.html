@@ -313,15 +313,16 @@
         let userList = []
         // 获取考勤
         for (let i = 0; i < userColoumnsNumber; i++) {
+            let classsNumber = document.getElementById(`classs${i}`).value;
             let startDate = document.getElementById(`newStartDate${i}`).value;
             let endDate = document.getElementById(`newEndDate${i}`).value;
             if (!startDate && !endDate) {
                 continue
             }
             let data = {
+                "classs_number": classsNumber,
                 "start_date": startDate,
                 "end_date": endDate,
-
             }
             let p_lit = []
             for (let j = 0; j < max_people_number; j++) {
@@ -343,7 +344,6 @@
             data["p_lit"] = p_lit
             userList.push(data)
         }
-        console.log(userList.length)
         if (userList.length < 0) {
             alert(`需要填写班次信息！`)
             hiddenLoad();
@@ -418,6 +418,7 @@
             let newTr = document.createElement("tr");
             let attendance_table = `
                 <td class="header" colspan="1">
+                    <input id="classs${userColoumnsNumber}" hidden value="${i}">
                     <span>班次：${i}  <span id="dateTime${userColoumnsNumber}" style="color: red;font-size: 12px"></span></span>
                         <div style="margin-top: 5px">
                             <sapn>签到：</sapn>

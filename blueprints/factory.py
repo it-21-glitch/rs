@@ -300,6 +300,7 @@ def factory_add_record():
                 "end_time": end_time,
                 "user_id": user_id,
                 "pay": pay,
+                "classs_number": i.get("classs_number") # 班次
             })
     specification_dict = {
         "classes_capacity_big": "大号",
@@ -367,8 +368,8 @@ def factory_add_record():
     for i in user_data_list:
         user_attendance_sql = f"""
             INSERT INTO
-                main.factory_attendance_user(user_id,record_sheet_id,start_time,end_time,user_pay)
-            VALUES ('{i.get('user_id')}','{insert_id}','{i.get('start_time')}','{i.get('end_time')}','{i.get('pay')}');
+                main.factory_attendance_user(user_id,record_sheet_id,start_time,end_time,user_pay,classs_number)
+            VALUES ('{i.get('user_id')}','{insert_id}','{i.get('start_time')}','{i.get('end_time')}','{i.get('pay')}','{i.get("classs_number")}');
            """
         user_attendance_all_sql += user_attendance_sql
     try:

@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS factory_attendance_user
     start_time      TEXT    NOT NULL,
     end_time        TEXT    NOT NULL,
     user_pay        INTEGER NOT NULL,
+    classs_number   INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES factory_user (id) ON DELETE CASCADE ON UPDATE NO ACTION,
     FOREIGN KEY (record_sheet_id) REFERENCES record_sheet (id) ON DELETE CASCADE ON UPDATE NO ACTION,
 )
