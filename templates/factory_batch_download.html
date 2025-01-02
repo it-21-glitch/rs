@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>批量下载</title>
+    <script src="/static/jquery.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         select {
             width: 177px;
@@ -69,74 +71,265 @@
             box-shadow: 0 0 8px rgba(102, 175, 233, 0.6); /* 聚焦时的阴影效果 */
         }
 
+        .attendance_produce {
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: nowrap;
+        }
+
+        .disabled-input {
+            background-color: #f0f0f0; /* 灰色背景 */
+            color: #999; /* 暗色文字 */
+            cursor: not-allowed; /* 禁止的鼠标指针 */
+        }
+
+        input[type="date"]:disabled, input[type='month']:disabled {
+            background-color: #f0f0f0; /* 灰色背景 */
+            color: #999; /* 暗色文字 */
+            cursor: not-allowed; /* 禁止的鼠标指针 */
+        }
     </style>
 </head>
 <body>
-<div class="content">
-    <span style="color: red;font-size: 12px">选择表格种类下载：</span>
-    <select>
-        <option disabled selected>--请选择--</option>
-        <option>考勤记录下载</option>
-        <option>生产记录下载</option>
-    </select>
-</div>
-<!--  下载生产记录  -->
-<div style="display: flex;align-items: flex-end;flex-wrap: nowrap;">
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">生产记录下载范围：</span>
-        <select>
+<div style="width: 60%;margin: 0">
+    <div class="content">
+        <span style="color: red;font-size: 12px">选择表格种类下载：</span>
+        <select onchange="Show()" id="toSelect">
             <option disabled selected>--请选择--</option>
-            <option>下载当前天录入的订单</option>
-            <option>按照PO下载</option>
-            <option>按照月份下载</option>
-            <option>按照天下载</option>
+            <option value="attendance">考勤记录下载</option>
+            <option value="produce">生产记录下载</option>
         </select>
     </div>
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">请输入po：</span>
-        <input type="text" placeholder="请输入PO">
+    <!--  下载考勤记录 style=" visibility: hidden;" -->
+    <div id="produce" style=" visibility: hidden;" class="attendance_produce">
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">生产记录下载范围：</span>
+            <select onchange="attendanceShow()" id="attendanceSelect">
+                <option disabled selected>--请选择--</option>
+                <option value="user">按照员工下载</option>
+                <option value="user_month">按照月份下载</option>
+            </select>
+        </div>
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">请选择员工：</span>
+            <select class="disabled-input" id="user" disabled="disabled">
+                <option disabled selected value="none">--请选择--</option>
+                {% for i in data_user_list_all %}
+                <option value="{{ i.id }}">{{ i.user_name }}</option>
+                {% endfor%}
+            </select>
+        </div>
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">请选择月份：</span>
+            <input type="month" placeholder="请输入月份" disabled="disabled" id="user_month">
+        </div>
     </div>
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">请选择月份：</span>
-        <input type="month" placeholder="请输入月份">
-    </div>
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">请选择天：</span>
-        <input type="date" placeholder="请输入月份">
-    </div>
-</div>
 
-<!--  下载考勤记录  -->
-<div style="display: flex;align-items: flex-end;flex-wrap: nowrap;">
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">生产记录下载范围：</span>
-        <select>
-            <option disabled selected>--请选择--</option>
-            <option>按照员工下载</option>
-            <option>按照月份下载</option>
-            <option>按照天下载</option>
-        </select>
+    <!--  下载生产记录  style=" visibility: hidden;"-->
+    <div id="attendance" style=" visibility: hidden;" class="attendance_produce">
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">生产记录下载范围：</span>
+            <select onchange="produceShow()" id="produceSelect">
+                <option disabled selected>--请选择--</option>
+                <option value="day">下载当前天录入的订单</option>
+                <option value="po">按照PO下载</option>
+                <option value="po_month">按照月份下载</option>
+                <option value="po_day">按照天下载</option>
+            </select>
+        </div>
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">请输入po：</span>
+            <input type="text" placeholder="请输入PO" id="po" disabled="disabled" class="disabled-input">
+        </div>
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">请选择月份：</span>
+            <input type="month" placeholder="请输入月份" id="po_month" disabled="disabled">
+        </div>
+        <div style="margin-right: 10px">
+            <span style="font-size: 12px">请选择天：</span>
+            <input type="date" placeholder="请输入月份" id="po_day" disabled="disabled">
+        </div>
     </div>
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">请选择员工：</span>
-        <select>
-            <option disabled selected>--请选择--</option>
-            <option>员工1</option>
-            <option>员工2</option>
-            <option>员工3</option>
-        </select>
+
+    <div id="downloadButton" style="display:none;position: relative;left: 0">
+        <button onclick="downLoad()">下载</button>
     </div>
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">请选择月份：</span>
-        <input type="month" placeholder="请输入月份">
-    </div>
-    <div style="margin-right: 10px">
-        <span style="font-size: 12px">请选择天：</span>
-        <input type="date" placeholder="请输入月份">
-    </div>
-</div>
-<div>
-    <button>下载</button>
 </div>
 </body>
+<script>
+    var csrf_token = $('meta[name=csrf-token]').attr('content');
+
+    function Show() {
+        let option = document.getElementById("toSelect")
+        let index = option.selectedIndex
+        let value = option.options[index].value;
+        // 显示样式
+        // 另外的样式进行隐藏
+        if (value === 'attendance') {
+            document.getElementById('produce').style.visibility = 'inherit'
+            document.getElementById('attendance').style.visibility = 'hidden'
+        } else {
+            document.getElementById('produce').style.visibility = 'hidden'
+            document.getElementById('attendance').style.visibility = 'inherit'
+        }
+        document.getElementById("downloadButton").style.display = 'block'
+    }
+
+    function attendanceShow() {
+        let option = document.getElementById("attendanceSelect")
+        let index = option.selectedIndex
+        let value = option.options[index].value;
+        if (value === 'user') {
+            document.getElementById('user').removeAttribute('disabled')
+            document.getElementById('user').removeAttribute('class')
+            document.getElementById('user_month').setAttribute("disabled", "disabled")
+            document.getElementById('user_month').value = ''
+        } else {
+            document.getElementById('user_month').removeAttribute('disabled')
+            document.getElementById('user_month').value = ''
+            document.getElementById('user').removeAttribute('disabled')
+            document.getElementById('user').removeAttribute('class')
+        }
+
+    }
+
+    function produceShow() {
+        let option = document.getElementById("produceSelect")
+        let index = option.selectedIndex
+        let value = option.options[index].value;
+        if (value === 'po') {
+            document.getElementById('po').removeAttribute('disabled')
+            document.getElementById('po').removeAttribute('class')
+        } else {
+            if (value === 'po_month') {
+                document.getElementById('po').removeAttribute('disabled')
+                document.getElementById('po_month').removeAttribute('disabled')
+                document.getElementById('po').removeAttribute('class')
+                document.getElementById('po_day').setAttribute("disabled", "disabled")
+            } else if (value === 'po_day') {
+                document.getElementById('po').removeAttribute('disabled')
+                document.getElementById('po_day').removeAttribute('disabled')
+                document.getElementById('po').removeAttribute('class')
+                document.getElementById('po_month').setAttribute("disabled", "disabled")
+            } else {
+                document.getElementById('po').setAttribute("class", "disabled-input")
+                document.getElementById('po').setAttribute("disabled", "disabled")
+                document.getElementById('po_day').setAttribute("disabled", "disabled")
+                document.getElementById('po_month').setAttribute("disabled", "disabled")
+            }
+        }
+
+    }
+
+    function downLoad() {
+        let option = document.getElementById("toSelect")
+        let index = option.selectedIndex
+        let value = option.options[index].value;  // 下载什么表格
+        // 下载表格的参数
+        let data = {};
+        data['mode'] = value
+        if (value === "attendance") {
+            let attendanceSelect = document.getElementById("attendanceSelect")
+            let attendanceSelectIndex = attendanceSelect.selectedIndex
+            let attendanceSelectValue = attendanceSelect.options[attendanceSelectIndex].value;
+            data['m'] = attendanceSelectValue
+            let userSelect = document.getElementById("user")
+            let userSelectIndex = userSelect.selectedIndex
+            let userSelectValue = userSelect.options[userSelectIndex].value;
+            if (attendanceSelectValue === 'user') {
+                data['user_id'] = userSelectValue
+            } else {
+                data['user_id'] = userSelectValue
+                data['month'] = document.getElementById("user_month").value
+            }
+            // 参数验证判断
+            if (attendanceSelectValue === "user") {
+                if (data.user_id === 'none') {
+                    alert("请选择员工！")
+                    return;
+                }
+
+            }
+            if (attendanceSelectValue === "user_month") {
+                if (data.user_id === 'none') {
+                    alert("请选择员工！")
+                    return;
+                }
+                if (!data.month) {
+                    alert("请选择月份！")
+                    return;
+                }
+            }
+        } else {
+            let produceSelect = document.getElementById("produceSelect")
+            let produceSelectIndex = produceSelect.selectedIndex
+            let produceSelectValue = produceSelect.options[produceSelectIndex].value;
+            data['m'] = produceSelectValue
+            if (produceSelectValue === 'po') {
+                data['po'] = document.getElementById("po").value
+            }
+            if (produceSelectValue === 'po_month') {
+                data['po'] = document.getElementById("po").value
+                data['po_month'] = document.getElementById("po_month").value
+            }
+            if (produceSelectValue === 'po_day') {
+                data['po'] = document.getElementById("po").value
+                data['po_day'] = document.getElementById("po_day").value
+            }
+            // 参数验证判断
+            if (produceSelectValue === "po") {
+                if (!data.po) {
+                    alert("请输入po！")
+                    return;
+                }
+            }
+            if (produceSelectValue === "po_month") {
+                if (!data.po) {
+                    alert("请输入po！")
+                    return;
+                }
+                if (!data.po_month) {
+                    alert("请选择月！")
+                    return;
+                }
+            }
+            if (produceSelectValue === "po_day") {
+                if (!data.po) {
+                    alert("请输入po！")
+                    return;
+                }
+                if (!data.po_day) {
+                    alert("请选择天！")
+                    return;
+                }
+            }
+        }
+        $.ajax({
+            url: '/factory_batch_download',  // 服务器端上传文件的 URL
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
+            },
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.code === 500) {
+                    alert(response.msg)
+                } else {
+                    // const url = `/factory_batch_download?file_name=${response.file_name}`;
+                    // const a = document.createElement('a');
+                    // a.href = url;
+                    // a.download = 'filename.extension'; // 替换为文件的实际名称
+                    // document.body.appendChild(a);
+                    // a.click();
+                    // a.remove();
+                    // window.URL.revokeObjectURL(url);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+            }
+        })
+    }
+</script>
 </html>

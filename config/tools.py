@@ -407,3 +407,182 @@ def generation_xlsx(pk, get_db):
     if os.path.exists(f"{dir_path}.zip"):
         shutil.rmtree(dir_path)
     return f"{dir_path}.zip"
+
+
+def attendance_xlsx(data):
+    file_name = uuid.uuid4()
+    base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+    template_file = os.path.join(base_path, 'template_xlsx', 'Template.xlsx')  # 薪酬
+    user = data[0].get("user_name")
+    data_list_all = data
+    uniq_list = []
+    new_user_work_attendance_list = []
+    for i in data_list_all:
+        user_name = i.get("user_name")
+        classs_number = i.get("classs_number")
+        start_time_day = i.get("start_time").split(" ")[0].split('-')[-1]
+        start_time_month = i.get("start_time").split(" ")[0].split('-')[-2]
+        uniq_str = f'{user_name}-{classs_number}-{start_time_month}-{start_time_day}'
+        if uniq_str in uniq_list:
+            continue
+        uniq_list.append(uniq_str)
+        new_user_work_attendance_list.append(i)
+    # 考勤
+    new_user_work_attendance_dict = {}
+    for i in new_user_work_attendance_list:
+        start_time_day = i.get("start_time").split(" ")[0].split('-')[-1]
+        start_time_month = i.get("start_time").split(" ")[0].split('-')[-2]
+        name_day = f'{i.get("user_name")}-{start_time_month}-{start_time_day}'
+        if not new_user_work_attendance_dict.get(name_day):
+            new_user_work_attendance_dict[name_day] = [i.get("start_time"), i.get("end_time")]
+        else:
+            new_user_work_attendance_dict[name_day].append(i.get("start_time"))
+            new_user_work_attendance_dict[name_day].append(i.get("end_time"))
+    # 获取最长的列（默认确定是最完整的）
+    # 获取最长的列（默认确定是最完整的）
+    max_length = max(len(times) for times in new_user_work_attendance_dict.values())
+    max_length_data = []
+    for name, times in new_user_work_attendance_dict.items():
+        while len(times) < max_length:
+            times.append('')
+        if len(times) == max_length and '' not in times:
+            max_length_data = times
+        times.sort()
+    for k, v in new_user_work_attendance_dict.items():
+        if "" not in v:
+            continue
+        num = 0
+        for index, i in enumerate(v):
+            if not i:
+                continue
+            while len(max_length_data) > num:
+                if max_length_data[num] == i:
+                    v[num] = i
+                    v[index] = ''
+                    break
+                num += 1
+
+    wb = xl.load_workbook(template_file)
+    sheet_names = wb.sheetnames
+    ws = wb[sheet_names[0]]  # 第一个表薪酬
+    styleFont = xl.styles.Font(name='Arial', size=10)  # 字体
+    styleAlignment = xl.styles.Alignment(horizontal='center', vertical='center')  # 居中
+    thin_border = Border(left=Side(style='thin'),
+                         right=Side(style='thin'),
+                         top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+
+    title_row = 3
+    title_column = 3
+    for i in range(0, max_length):  # 设置班次标题
+        line_letter = xl.utils.get_column_letter(title_column)  # 根据数字转换为列的坐标 起始
+        line_letter_next = xl.utils.get_column_letter(title_column + 1)  # 根据数字转换为列的坐标 起始坐标+1
+        if i % 2:
+            ws[f'{line_letter}{title_row}'] = f'班次-签退'
+        else:
+            ws[f'{line_letter}{title_row}'] = f'班次-签到'
+        ws[f'{line_letter}{title_row}'].alignment = styleAlignment
+        ws.merge_cells(f'{line_letter}{title_row}:{line_letter_next}{title_row + 1}')
+        title_column += 2
+    ws.merge_cells(f'A1:{xl.utils.get_column_letter(title_column - 1)}2')  # 标题合并
+
+    work_attendance_row_num = 5
+    for key, val in new_user_work_attendance_dict.items():
+        work_attendance_column_num = 3
+        user_name = key
+        ws[f'A{work_attendance_row_num}'] = user_name
+        ws[f'A{work_attendance_row_num}'].font = styleFont
+        ws[f'A{work_attendance_row_num}'].alignment = styleAlignment
+        ws.merge_cells(f'A{work_attendance_row_num}:B{work_attendance_row_num + 1}')
+        for i in val:
+            line_letter = xl.utils.get_column_letter(work_attendance_column_num)  # 根据数字转换为列的坐标 起始
+            line_letter_next = xl.utils.get_column_letter(work_attendance_column_num + 1)  # 根据数字转换为列的坐标 起始坐标+1
+            ws[f'{line_letter}{work_attendance_row_num}'] = i
+            # 设置字体样式
+            ws[f'{line_letter}{work_attendance_row_num}'].font = styleFont
+            ws[f'{line_letter}{work_attendance_row_num}'].alignment = styleAlignment
+            # 合并居中
+            ws.merge_cells(f'{line_letter}{work_attendance_row_num}:{line_letter_next}{work_attendance_row_num + 1}')
+            work_attendance_column_num += 2
+        work_attendance_row_num += 2  # 每两格子区分一下
+    # 设置合并单元格的边框
+    for row in ws.iter_rows(min_row=3, max_row=work_attendance_row_num - 1, min_col=1, max_col=title_column - 1):
+        for cell in row:
+            cell.border = thin_border
+    file_name = f'{file_name}.xlsx'
+    file_path = os.path.join(base_path, 'generation_xlsx', file_name)
+    wb.save(file_path)
+
+    return file_name
+
+
+def produce_xlsx(data):
+    file_name = uuid.uuid4()
+    base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+    template_file_1 = os.path.join(base_path, 'template_xlsx', 'Template_1.xlsx')  # 产能记录
+    wb_1 = xl.load_workbook(template_file_1)
+    ws2_by_index = wb_1.active  # 第二个 产能记录
+
+    styleFont = xl.styles.Font(name='Arial', size=10)  # 字体
+    styleAlignment = xl.styles.Alignment(horizontal='center', vertical='center')  # 居中
+    thin_border = Border(left=Side(style='thin'),
+                         right=Side(style='thin'),
+                         top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+    row_num = 5
+    for data_dict in data:
+        po = data_dict.get("po")
+        item = data_dict.get("item")
+        entry_time = data_dict.get("entry_time")
+        specification_name = data_dict.get("specification_name")
+        material_name = data_dict.get("material_name")
+        process_name = data_dict.get("process_name")
+        equipment_name = data_dict.get("equipment_name")
+        people_number = data_dict.get("people_number")
+        output_number = data_dict.get("output_number")
+        ws2_by_index[f'A{row_num}'] = entry_time
+        ws2_by_index[f'C{row_num}'] = po
+        ws2_by_index[f'E{row_num}'] = item
+        ws2_by_index[f'G{row_num}'] = material_name
+        ws2_by_index[f'I{row_num}'] = process_name
+        ws2_by_index[f'K{row_num}'] = equipment_name
+        ws2_by_index[f'M{row_num}'] = people_number
+        ws2_by_index[f'O{row_num}'] = specification_name
+        ws2_by_index[f'Q{row_num}'] = output_number
+        ws2_by_index.merge_cells(f'A{row_num}:B{row_num + 1}')
+        ws2_by_index.merge_cells(f'C{row_num}:D{row_num + 1}')
+        ws2_by_index.merge_cells(f'E{row_num}:F{row_num + 1}')
+        ws2_by_index.merge_cells(f'G{row_num}:H{row_num + 1}')
+        ws2_by_index.merge_cells(f'I{row_num}:J{row_num + 1}')
+        ws2_by_index.merge_cells(f'K{row_num}:L{row_num + 1}')
+        ws2_by_index.merge_cells(f'M{row_num}:N{row_num + 1}')
+        ws2_by_index.merge_cells(f'O{row_num}:P{row_num + 1}')
+        ws2_by_index.merge_cells(f'Q{row_num}:R{row_num + 1}')
+        ws2_by_index[f'A{row_num}'].font = styleFont
+        ws2_by_index[f'A{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'C{row_num}'].font = styleFont
+        ws2_by_index[f'C{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'E{row_num}'].font = styleFont
+        ws2_by_index[f'E{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'G{row_num}'].font = styleFont
+        ws2_by_index[f'G{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'I{row_num}'].font = styleFont
+        ws2_by_index[f'I{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'K{row_num}'].font = styleFont
+        ws2_by_index[f'K{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'M{row_num}'].font = styleFont
+        ws2_by_index[f'M{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'O{row_num}'].font = styleFont
+        ws2_by_index[f'O{row_num}'].alignment = styleAlignment
+        ws2_by_index[f'Q{row_num}'].font = styleFont
+        ws2_by_index[f'Q{row_num}'].alignment = styleAlignment
+        for row in ws2_by_index.iter_rows(min_row=5, max_row=row_num + 1, min_col=1, max_col=19 - 1):
+            for cell in row:
+                cell.border = thin_border
+        row_num += 2
+
+    file_name = f'{file_name}.xlsx'
+    file_path = os.path.join(base_path, 'generation_xlsx', file_name)
+    wb_1.save(file_path)
+
+    return file_name

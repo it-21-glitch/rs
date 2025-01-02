@@ -127,10 +127,18 @@ factory_bp.add_url_rule(
 )
 
 factory_bp.add_url_rule(
+    rule='/factory_batch_download_index',
+    endpoint='factory_batch_download_index',
+    view_func=factory_batch_download_index,
+    methods=["GET"]
+)
+
+# GET 下载 POST 查询数据
+factory_bp.add_url_rule(
     rule='/factory_batch_download',
     endpoint='factory_batch_download',
     view_func=factory_batch_download,
-    methods=["GET"]
+    methods=["GET", "POST"]
 )
 __all__ = [
     "rs_bp",

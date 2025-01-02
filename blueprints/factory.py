@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime
 from flask import request, render_template, make_response
 
-from config import get_db, generation_xlsx
+from config import get_db, generation_xlsx, attendance_xlsx, produce_xlsx
 
 
 # 首页
@@ -300,7 +300,7 @@ def factory_add_record():
                 "end_time": end_time,
                 "user_id": user_id,
                 "pay": pay,
-                "classs_number": i.get("classs_number") # 班次
+                "classs_number": i.get("classs_number")  # 班次
             })
     specification_dict = {
         "classes_capacity_big": "大号",
@@ -445,6 +445,155 @@ def factory_add_user():
     return {"code": 200}
 
 
-def factory_batch_download():
+def factory_batch_download_index():
+    get_user_sql = """
+        SELECT id,user_name FROM main.factory_user
+    """
+    db_conn = get_db()
+    cursor = db_conn.cursor()
+    cursor.execute(get_user_sql)
+    column_names = [description[0] for description in cursor.description]
+    data_user_list_all = [dict(zip(column_names, row)) for row in cursor.fetchall()]
+    cursor.close()
+    db_conn.close()
+    return render_template("factory_batch_download.html", data_user_list_all=data_user_list_all)
 
-    return render_template("factory_batch_download.html")
+
+# 批量下载
+def factory_batch_download():
+    if request.method == 'POST':
+        data = request.json
+        mode = data.get("mode")
+        m = data.get("m")
+        db_conn = get_db()
+        cursor = db_conn.cursor()
+        if mode == 'attendance':
+            user_id = data.get("user_id")
+            month = data.get("month")
+            if m == 'user':
+                get_sql = f"""
+                     SELECT 
+                        fau.start_time,
+                        fau.end_time,
+                        fu.user_name,
+                        fau.user_pay,
+                        fau.classs_number
+                    FROM 
+                        main.factory_attendance_user  AS fau
+                    INNER JOIN 
+                        main.factory_user AS fu
+                    ON 
+                        fau.user_id= fu.id
+                    WHERE fau.user_id = '{user_id}'
+                """
+            else:
+                get_sql = f"""
+                  SELECT 
+                        fau.start_time,
+                        fau.end_time,
+                        fu.user_name,
+                        fau.user_pay,
+                        fau.classs_number
+                    FROM 
+                        main.factory_attendance_user  AS fau
+                    INNER JOIN 
+                        main.factory_user AS fu
+                    ON 
+                        fau.user_id= fu.id
+                    WHERE fau.user_id = '{user_id}' AND  strftime('%Y-%m', fau.start_time) == '{month}'
+                """
+            cursor.execute(get_sql)
+            column_names = [description[0] for description in cursor.description]
+            data_user_list_all = [dict(zip(column_names, row)) for row in cursor.fetchall()]
+            cursor.close()
+            db_conn.close()
+            if not data_user_list_all:
+                return {"code": 500, "msg": "当前用户没有考勤数据！"}
+            file_name = attendance_xlsx(data_user_list_all)
+        if mode == 'produce':
+            po = data.get("po")
+            po_month = data.get("po_month")
+            po_day = data.get("po_day")
+            if m == 'day':
+                examine_time = datetime.now().strftime('%Y-%m-%d')
+                get_sql = f"""
+                     SELECT
+                        rs.po,
+                        rs.item,
+                        rs.entry_time,
+                        rs.specification_name,
+                        rs.material_name,
+                        rs.process_name,
+                        rs.equipment_name,
+                        rs.people_number,
+                        rs.output_number
+                    FROM
+                        main.record_sheet  AS rs
+                    WHERE strftime('%Y-%m-%d', rs.entry_time) == '{examine_time}'
+                """
+            elif m == 'po_month':
+                get_sql = f"""
+                     SELECT
+                        rs.po,
+                        rs.item,
+                        rs.entry_time,
+                        rs.specification_name,
+                        rs.material_name,
+                        rs.process_name,
+                        rs.equipment_name,
+                        rs.people_number,
+                        rs.output_number
+                    FROM
+                        main.record_sheet  AS rs
+                    WHERE strftime('%Y-%m', rs.entry_time) == '{po_month}' AND rs.po == '{po}'
+                """
+            elif m == 'po_day':
+                get_sql = f"""
+                     SELECT
+                        rs.po,
+                        rs.item,
+                        rs.entry_time,
+                        rs.specification_name,
+                        rs.material_name,
+                        rs.process_name,
+                        rs.equipment_name,
+                        rs.people_number,
+                        rs.output_number
+                    FROM
+                        main.record_sheet  AS rs
+                    WHERE strftime('%Y-%m-%d', rs.entry_time) == '{po_day}' AND rs.po == '{po}'
+                """
+            else:
+                get_sql = f"""
+                     SELECT
+                        rs.po,
+                        rs.item,
+                        rs.entry_time,
+                        rs.specification_name,
+                        rs.material_name,
+                        rs.process_name,
+                        rs.equipment_name,
+                        rs.people_number,
+                        rs.output_number
+                    FROM
+                        main.record_sheet  AS rs
+                    WHERE rs.po == '{po}'
+                """
+            cursor.execute(get_sql)
+            column_names = [description[0] for description in cursor.description]
+            data_all = [dict(zip(column_names, row)) for row in cursor.fetchall()]
+            cursor.close()
+            db_conn.close()
+            if not data_all:
+                return {"code": 500, "msg": "没有录入数据！"}
+            file_name = produce_xlsx(data_all)
+        # return {"code": 200, "file_name": file_name}
+        return {"code": 200, }
+
+    file_name = request.args.get("file_name")
+    file_path = os.path.join("static", 'generation_xlsx', file_name)
+    with open(file_path, mode='rb') as file:
+        response = make_response(file.read())
+        response.headers['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{file_name}'
+        response.mimetype = 'text/html'  # 设置正确的 MIME 类型
+        return response
