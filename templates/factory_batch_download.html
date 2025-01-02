@@ -316,14 +316,14 @@
                 if (response.code === 500) {
                     alert(response.msg)
                 } else {
-                    // const url = `/factory_batch_download?file_name=${response.file_name}`;
-                    // const a = document.createElement('a');
-                    // a.href = url;
-                    // a.download = 'filename.extension'; // 替换为文件的实际名称
-                    // document.body.appendChild(a);
-                    // a.click();
-                    // a.remove();
-                    // window.URL.revokeObjectURL(url);
+                    const url = `/factory_batch_download?file_name=${response.file_name}`;
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'filename.extension'; // 替换为文件的实际名称
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
                 }
             },
             error: function (xhr, status, error) {

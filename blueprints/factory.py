@@ -462,6 +462,7 @@ def factory_batch_download_index():
 # 批量下载
 def factory_batch_download():
     if request.method == 'POST':
+        file_name = ''
         data = request.json
         mode = data.get("mode")
         m = data.get("m")
@@ -484,7 +485,11 @@ def factory_batch_download():
                         main.factory_user AS fu
                     ON 
                         fau.user_id= fu.id
-                    WHERE fau.user_id = '{user_id}'
+                    INNER JOIN
+                        record_sheet as rs
+                    ON 
+                        rs.id = fau.record_sheet_id
+                    WHERE fau.user_id = '{user_id}' AND rs.examine_status = 1
                 """
             else:
                 get_sql = f"""
@@ -500,7 +505,11 @@ def factory_batch_download():
                         main.factory_user AS fu
                     ON 
                         fau.user_id= fu.id
-                    WHERE fau.user_id = '{user_id}' AND  strftime('%Y-%m', fau.start_time) == '{month}'
+                    INNER JOIN
+                        record_sheet as rs
+                    ON 
+                        rs.id = fau.record_sheet_id
+                    WHERE fau.user_id = '{user_id}' AND  strftime('%Y-%m', fau.start_time) == '{month}' AND rs.examine_status = 1
                 """
             cursor.execute(get_sql)
             column_names = [description[0] for description in cursor.description]
@@ -529,7 +538,7 @@ def factory_batch_download():
                         rs.output_number
                     FROM
                         main.record_sheet  AS rs
-                    WHERE strftime('%Y-%m-%d', rs.entry_time) == '{examine_time}'
+                    WHERE strftime('%Y-%m-%d', rs.entry_time) == '{examine_time}' AND examine_status = 1
                 """
             elif m == 'po_month':
                 get_sql = f"""
@@ -545,7 +554,7 @@ def factory_batch_download():
                         rs.output_number
                     FROM
                         main.record_sheet  AS rs
-                    WHERE strftime('%Y-%m', rs.entry_time) == '{po_month}' AND rs.po == '{po}'
+                    WHERE strftime('%Y-%m', rs.entry_time) == '{po_month}' AND rs.po == '{po}' AND examine_status = 1
                 """
             elif m == 'po_day':
                 get_sql = f"""
@@ -561,7 +570,7 @@ def factory_batch_download():
                         rs.output_number
                     FROM
                         main.record_sheet  AS rs
-                    WHERE strftime('%Y-%m-%d', rs.entry_time) == '{po_day}' AND rs.po == '{po}'
+                    WHERE strftime('%Y-%m-%d', rs.entry_time) == '{po_day}' AND rs.po == '{po}' AND examine_status = 1
                 """
             else:
                 get_sql = f"""
@@ -577,7 +586,7 @@ def factory_batch_download():
                         rs.output_number
                     FROM
                         main.record_sheet  AS rs
-                    WHERE rs.po == '{po}'
+                    WHERE rs.po == '{po}' AND examine_status = 1
                 """
             cursor.execute(get_sql)
             column_names = [description[0] for description in cursor.description]
@@ -587,8 +596,8 @@ def factory_batch_download():
             if not data_all:
                 return {"code": 500, "msg": "没有录入数据！"}
             file_name = produce_xlsx(data_all)
-        # return {"code": 200, "file_name": file_name}
-        return {"code": 200, }
+        return {"code": 200, "file_name": file_name}
+        # return {"code": 200, }
 
     file_name = request.args.get("file_name")
     file_path = os.path.join("static", 'generation_xlsx', file_name)
