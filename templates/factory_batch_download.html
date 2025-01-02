@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>批量下载</title>
+    <style>
+        select {
+            width: 177px;
+            height: 35px;
+            color: #333;
+            font-size: 12px;
+            background-color: #fff;
+            -moz-appearance: none;
+            appearance: none;
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            border: none;
+            border-bottom: 1px solid;
+        }
+
+        select:disabled {
+            background-color: #f0f0f0;
+            color: #999;
+        }
+
+        select:focus {
+            border-color: #66afe9;
+            outline: none;
+        }
+
+        option {
+            display: block; /* 使选项作为块级元素显示 */
+            text-align: center; /* 水平居中文本 */
+            padding: 0; /* 移除内边距 */
+            background-color: #f8f8f8; /* 设置选项的背景颜色 */
+            border-bottom: 1px solid #e7e7e7; /* 设置选项之间的分隔线 */
+        }
+
+        /* 移除最后一个选项的分隔线 */
+        option:last-child {
+            border-bottom: none;
+        }
+
+        input:focus {
+            border-color: #66afe9; /* 聚焦时的边框颜色 */
+            outline: none; /* 移除默认的聚焦轮廓 */
+        }
+
+        input[type='number'], input[type='text'] {
+            border: none;
+            border-bottom: 1px solid;
+            padding: 4px
+        }
+
+        input[type="date"], input[type='month'] {
+            border: 1px solid #ccc; /* 边框颜色和宽度 */
+            padding: 4px; /* 内边距 */
+            font-size: 14px; /* 字体大小 */
+            border-radius: 4px; /* 边框圆角 */
+            box-sizing: border-box; /* 边框和内边距包含在宽度内 */
+            width: 170px; /* 指定宽度 */
+            background-color: #fff; /* 背景颜色 */
+            color: #333; /* 字体颜色 */
+        }
+
+        input[type="date"]:focus, input[type='month']:focus {
+            border-color: #66afe9; /* 聚焦时的边框颜色 */
+            outline: none; /* 移除默认的聚焦轮廓 */
+            box-shadow: 0 0 8px rgba(102, 175, 233, 0.6); /* 聚焦时的阴影效果 */
+        }
+
+    </style>
+</head>
+<body>
+<div class="content">
+    <span style="color: red;font-size: 12px">选择表格种类下载：</span>
+    <select>
+        <option disabled selected>--请选择--</option>
+        <option>考勤记录下载</option>
+        <option>生产记录下载</option>
+    </select>
+</div>
+<!--  下载生产记录  -->
+<div style="display: flex;align-items: flex-end;flex-wrap: nowrap;">
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">生产记录下载范围：</span>
+        <select>
+            <option disabled selected>--请选择--</option>
+            <option>下载当前天录入的订单</option>
+            <option>按照PO下载</option>
+            <option>按照月份下载</option>
+            <option>按照天下载</option>
+        </select>
+    </div>
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">请输入po：</span>
+        <input type="text" placeholder="请输入PO">
+    </div>
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">请选择月份：</span>
+        <input type="month" placeholder="请输入月份">
+    </div>
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">请选择天：</span>
+        <input type="date" placeholder="请输入月份">
+    </div>
+</div>
+
+<!--  下载考勤记录  -->
+<div style="display: flex;align-items: flex-end;flex-wrap: nowrap;">
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">生产记录下载范围：</span>
+        <select>
+            <option disabled selected>--请选择--</option>
+            <option>按照员工下载</option>
+            <option>按照月份下载</option>
+            <option>按照天下载</option>
+        </select>
+    </div>
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">请选择员工：</span>
+        <select>
+            <option disabled selected>--请选择--</option>
+            <option>员工1</option>
+            <option>员工2</option>
+            <option>员工3</option>
+        </select>
+    </div>
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">请选择月份：</span>
+        <input type="month" placeholder="请输入月份">
+    </div>
+    <div style="margin-right: 10px">
+        <span style="font-size: 12px">请选择天：</span>
+        <input type="date" placeholder="请输入月份">
+    </div>
+</div>
+<div>
+    <button>下载</button>
+</div>
+</body>
+</html>

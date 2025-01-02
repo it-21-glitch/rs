@@ -443,3 +443,8 @@ def factory_add_user():
         f.write(json.dumps(user_list))
     os.remove(file_path)
     return {"code": 200}
+
+
+def factory_batch_download():
+
+    return render_template("factory_batch_download.html")

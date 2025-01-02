@@ -125,6 +125,13 @@ factory_bp.add_url_rule(
     view_func=factory_delete_attendance_and_production_records,
     methods=["DELETE"]
 )
+
+factory_bp.add_url_rule(
+    rule='/factory_batch_download',
+    endpoint='factory_batch_download',
+    view_func=factory_batch_download,
+    methods=["GET"]
+)
 __all__ = [
     "rs_bp",
     "factory_bp",
