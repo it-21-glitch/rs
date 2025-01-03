@@ -307,13 +307,17 @@ def factory_add_record():
         "classes_capacity_middle": "中号",
         "classes_capacity_small": "小号",
     }
+    # 人员计算
+    if len(user_data_list) == 0:
+        return {'code': 500, "error": f"产能输入错误,班次人员未选择！"}
     # 产量判断
     if int(classes_production_quantity_number) == 0:
         return {'code': 500, "error": f"产能输入错误，产量不能为0！"}
-    if person_number * len(user_data_list) != int(classes_production_quantity_number):
+    # 产量不能小于最小计算产量
+    if person_number * len(user_data_list) > int(classes_production_quantity_number):
         return {'code': 500, "error": f"产能输入错误，产能应为:{person_number * len(user_data_list)}！"}
-    if len(user_data_list) == 0 and int(classes_production_quantity_number) == 0:
-        return {'code': 500, "error": f"产能输入错误,班次人员未选择！"}
+
+
     # 获取设备
     equipment_name = data_dict.get("equipment_name")
     # 获取材质名称

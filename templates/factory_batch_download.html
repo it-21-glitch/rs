@@ -103,9 +103,9 @@
     <!--  下载考勤记录 style=" visibility: hidden;" -->
     <div id="produce" style=" visibility: hidden;" class="attendance_produce">
         <div style="margin-right: 10px">
-            <span style="font-size: 12px">生产记录下载范围：</span>
+            <span style="font-size: 12px">考勤记录下载范围：</span>
             <select onchange="attendanceShow()" id="attendanceSelect">
-                <option disabled selected>--请选择--</option>
+                <option disabled selected value="none">--请选择--</option>
                 <option value="user">按照员工下载</option>
                 <option value="user_month">按照月份下载</option>
             </select>
@@ -130,7 +130,7 @@
         <div style="margin-right: 10px">
             <span style="font-size: 12px">生产记录下载范围：</span>
             <select onchange="produceShow()" id="produceSelect">
-                <option disabled selected>--请选择--</option>
+                <option disabled selected value="none">--请选择--</option>
                 <option value="day">下载当前天录入的订单</option>
                 <option value="po">按照PO下载</option>
                 <option value="po_month">按照月份下载</option>
@@ -232,6 +232,10 @@
             let attendanceSelect = document.getElementById("attendanceSelect")
             let attendanceSelectIndex = attendanceSelect.selectedIndex
             let attendanceSelectValue = attendanceSelect.options[attendanceSelectIndex].value;
+            if (attendanceSelectValue === 'none') {
+                alert("选择下载范围！")
+                return;
+            }
             data['m'] = attendanceSelectValue
             let userSelect = document.getElementById("user")
             let userSelectIndex = userSelect.selectedIndex
@@ -264,6 +268,10 @@
             let produceSelect = document.getElementById("produceSelect")
             let produceSelectIndex = produceSelect.selectedIndex
             let produceSelectValue = produceSelect.options[produceSelectIndex].value;
+              if (produceSelectValue === 'none') {
+                alert("选择下载范围！")
+                return;
+            }
             data['m'] = produceSelectValue
             if (produceSelectValue === 'po') {
                 data['po'] = document.getElementById("po").value

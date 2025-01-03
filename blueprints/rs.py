@@ -1,7 +1,8 @@
+import os
 import sqlite3
 import pandas as pd
 from datetime import datetime
-from flask import request, redirect, url_for, render_template, session
+from flask import request, redirect, url_for, render_template, session, make_response
 
 from config import VerifyForm, get_db, regular_function, rule_data_base
 
@@ -240,3 +241,13 @@ def rs_to_examine_all():
         db_conn.rollback()
         return {'code': 500}
     return {'code': 200}
+
+
+def rs_download_xlsx():
+    file_path = os.path.join("static", 'template_xlsx', 'ruleTemplate.xlsx')
+    file_name = 'rule_template.xlsx'
+    with open(file_path, mode='rb') as file:
+        response = make_response(file.read())
+        response.headers['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{file_name}'
+        response.mimetype = 'text/html'  # 设置正确的 MIME 类型
+        return response

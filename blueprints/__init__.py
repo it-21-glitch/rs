@@ -58,6 +58,14 @@ rs_bp.add_url_rule(
     methods=["POST"]
 )
 
+rs_bp.add_url_rule(
+    rule='/rs_download_xlsx',
+    endpoint='rs_download_xlsx',
+    view_func=rs_download_xlsx,
+    methods=["GET"]
+)
+
+
 # factory +++++++++++++++++++++++++++
 factory_bp.add_url_rule(
     rule='/',

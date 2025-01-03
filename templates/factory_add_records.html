@@ -90,7 +90,7 @@
                 </th>
             </tr>
             <tr>
-                <th class="header" colspan="5" style="text-align: center">班次/员工考勤</th>
+                <th class="header" colspan="5" style="text-align: center">班次</th>
             </tr>
         </table>
     </div>
@@ -138,7 +138,7 @@
                     min_people_number = response.min_people_number // 最小人数
                     user_list = response.user_list // 工序员工列表
                     if (code === 200) {
-                        document.getElementById("message").innerHTML = message + `<a style="color: #007bff" href="#" id="help">help</a>`;
+                        document.getElementById("message").innerHTML = message + `<a style="color: #007bff" href="#" id="help">示例</a>&nbsp;<span>当前示例仅供参考，请按照实际选择填写！</span>`;
                         // 删除列
                         let trArray = Array.from(content_table.querySelectorAll("tr"));
                         for (let i = 6; i < trArray.length; i++) {
@@ -421,11 +421,11 @@
                     <input id="classs${userColoumnsNumber}" hidden value="${i}">
                     <span>班次：${i}  <span id="dateTime${userColoumnsNumber}" style="color: red;font-size: 12px"></span></span>
                         <div style="margin-top: 5px">
-                            <sapn>签到：</sapn>
+                            <sapn>开始时间：</sapn>
                             <input type="datetime-local" id="newStartDate${userColoumnsNumber}" onchange="mam_hour_func(${userColoumnsNumber})">
                          </div>
                         <div style="margin-top: 5px">
-                            <sapn>签退：</sapn>
+                            <sapn>结束时间：</sapn>
                             <input type="datetime-local" id="newEndDate${userColoumnsNumber}" onchange="mam_hour_func(${userColoumnsNumber})">
                         </div>
                 </td>

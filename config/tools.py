@@ -48,6 +48,8 @@ def regular_function():
     for index, row in df.iterrows():
         list_row = []
         for value in row:
+            if str(value).lower() == 'nan':
+                value = '无'
             if isinstance(value, float):
                 value = round(value)  # 进行4舍5入
             list_row.append(value)
