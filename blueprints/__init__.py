@@ -65,7 +65,6 @@ rs_bp.add_url_rule(
     methods=["GET"]
 )
 
-
 # factory +++++++++++++++++++++++++++
 factory_bp.add_url_rule(
     rule='/',
@@ -146,7 +145,7 @@ factory_bp.add_url_rule(
     rule='/factory_batch_download',
     endpoint='factory_batch_download',
     view_func=factory_batch_download,
-    methods=["GET", "POST"]
+    methods=["GET", "POST", "DELETE"]
 )
 __all__ = [
     "rs_bp",

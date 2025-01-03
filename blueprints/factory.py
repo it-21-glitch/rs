@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import json
 import time
@@ -16,7 +17,7 @@ def factory_index():
         工厂使用的首页
     :return: index首页
     """
-    title = 'RS工厂首页'
+    title = '首页'
     per_page = 12  # 每页显示12条记录
     page = int(request.args.get('page', 1))
     db_conn = get_db()
@@ -206,7 +207,7 @@ def factory_get_information_description():
     with open(file_path_json, mode='r', encoding='utf-8') as f:
         json_read_list = json.loads(f.read())
     for i in json_read_list:
-        working_procedure = i.get("working_procedure")
+        working_procedure = i.get("working_procedure").replace(" ", "")
         if process_name == working_procedure:
             user_list.append(i)
     cursor.close()
@@ -250,6 +251,7 @@ def factory_delete_attendance_and_production_records():
     while status:
         print("文件正在使用中，请稍等片刻...")
         time.sleep(5)
+    time.sleep(5)
     os.remove(file_path)
     return {"code": 200}
 
@@ -316,7 +318,6 @@ def factory_add_record():
     # 产量不能小于最小计算产量
     if person_number * len(user_data_list) > int(classes_production_quantity_number):
         return {'code': 500, "error": f"产能输入错误，产能应为:{person_number * len(user_data_list)}！"}
-
 
     # 获取设备
     equipment_name = data_dict.get("equipment_name")
@@ -601,7 +602,22 @@ def factory_batch_download():
                 return {"code": 500, "msg": "没有录入数据！"}
             file_name = produce_xlsx(data_all)
         return {"code": 200, "file_name": file_name}
-        # return {"code": 200, }
+
+    if request.method == 'DELETE':
+        file_name = request.json.get("file_name")
+        file_path = os.path.join("static", 'generation_xlsx', file_name)
+        status = False
+        try:  # 尝试以读写模式打开文件
+            with open(file_path, 'r+'):
+                pass
+        except IOError:
+            status = True
+        while status:
+            print("文件正在使用中，请稍等片刻...")
+            time.sleep(5)
+        time.sleep(5)
+        os.remove(file_path)
+        return {"code": 200}
 
     file_name = request.args.get("file_name")
     file_path = os.path.join("static", 'generation_xlsx', file_name)

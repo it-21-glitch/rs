@@ -268,7 +268,7 @@
             let produceSelect = document.getElementById("produceSelect")
             let produceSelectIndex = produceSelect.selectedIndex
             let produceSelectValue = produceSelect.options[produceSelectIndex].value;
-              if (produceSelectValue === 'none') {
+            if (produceSelectValue === 'none') {
                 alert("选择下载范围！")
                 return;
             }
@@ -332,7 +332,26 @@
                     a.click();
                     a.remove();
                     window.URL.revokeObjectURL(url);
+                    deleteFile(response.file_name);
                 }
+            },
+            error: function (xhr, status, error) {
+                console.error('Upload failed:', error);
+            }
+        })
+    }
+
+    function deleteFile(file_name) {
+        $.ajax({
+            url: `/factory_batch_download`,  // 服务器端上传文件的 URL
+            type: 'DELETE',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrf_token,  // 添加 CSRF Token 到请求头
+            },
+            data: JSON.stringify({'file_name':file_name}),
+            success: function (response) {
+                console.log("清除文件。")
             },
             error: function (xhr, status, error) {
                 console.error('Upload failed:', error);
